@@ -39,7 +39,7 @@ setup(
         'Topic :: Software Development',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2.7',
-        # 'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.4',
     ],
     keywords='development tool type hinting unittest living documentation',
     packages=['ducktest'],
