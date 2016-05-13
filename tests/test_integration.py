@@ -33,7 +33,7 @@ class TestIntegration(unittest.TestCase):
     def test_module_method(self):
         conf = ConfigMock('module_method')
         run(conf)
-        self.written.assert_called_with(conf.in_sample_path('module_method.py'), [
+        self.written.assert_called_once_with(conf.in_sample_path('module_method.py'), [
             'def some_method(a):\n',
             '    """\n',
             '    :type a: int\n',
@@ -45,7 +45,7 @@ class TestIntegration(unittest.TestCase):
     def test_method_in_class(self):
         conf = ConfigMock('method_in_class')
         run(conf)
-        self.written.assert_called_with(conf.in_sample_path('method_in_class.py'), [
+        self.written.assert_called_once_with(conf.in_sample_path('method_in_class.py'), [
             'class SomeClass(object):\n',
             '    def __init__(self, b):\n',
             '        """:type b: int"""\n',
