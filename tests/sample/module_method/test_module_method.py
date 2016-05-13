@@ -1,6 +1,6 @@
 import unittest
 
-from tests.sample import module_method
+from tests.sample.module_method import module_method
 
 
 class ModuleMethodTest(unittest.TestCase):
