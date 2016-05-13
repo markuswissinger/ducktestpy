@@ -108,7 +108,7 @@ class DocstringWriter(object):
     @staticmethod
     def _module_name(clazz):
         name = clazz.__module__
-        if name == '__builtin__':
+        if name == '__builtin__' or 'builtins':
             return ''
         return name + '.'
 
