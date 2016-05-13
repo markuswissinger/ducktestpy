@@ -16,8 +16,6 @@ limitations under the License.
 
 import unittest
 
-from StringIO import StringIO
-
 from hamcrest import assert_that, is_
 
 from ducktest import Configuration
@@ -35,13 +33,13 @@ class ConfigReaderTest(unittest.TestCase):
         assert_that(result, is_(['home', 'test', 'project']))
 
     def test_reading(self):
-        config_file = StringIO(''.join([
+        config_file = iter([
             'top_level_dir           py/\n',
             'execute_tests_in        py/demo/\n',
             'write_to                py/demo/\n',
             'exclude_parameter_names self\n',
             'exclude_parameter_names cls\n',
-        ]))
+        ])
         configuration = Configuration('/home/test/project/')
         configuration.read(config_file)
 
@@ -51,16 +49,16 @@ class ConfigReaderTest(unittest.TestCase):
         assert_that(configuration.write_docstrings_in_directories, is_(['/home/test/project/py/demo']))
 
     def test_comments(self):
-        config_file = StringIO(''.join([
+        config_file = iter([
             ' # top_level_dir           py/\n',
-        ]))
+        ])
         configuration = Configuration('/home/test/project/')
         configuration.read(config_file)
 
         assert_that(configuration.top_level_directory, is_('/home/test/project/'))
 
     def test_empty_file(self):
-        config_file = StringIO('')
+        config_file = iter([''])
         configuration = Configuration('/home/test/project/')
         configuration.read(config_file)
 

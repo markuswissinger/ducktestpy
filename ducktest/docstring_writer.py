@@ -19,6 +19,16 @@ import tokenize
 from future.utils import iteritems
 
 
+class WrappedIterator(object):
+    """python3 compatibility"""
+
+    def __init__(self, lines):
+        self.line_iterator = iter(lines)
+
+    def next_line(self):
+        return next(self.line_iterator)
+
+
 def docstring_positions(lines):
     """:returns a dictionary {line_number_of_def_statement: (write_docstring_to_line_index, docstring_indent)}"""
     positions = {}
@@ -26,7 +36,8 @@ def docstring_positions(lines):
     prev_token_type = None
     maybe_first_line = None
     first_line = None
-    for token_type, text, (srow, scol), (erow, ecol), l in tokenize.generate_tokens(iter(lines).next):
+    wrapped_iterator = WrappedIterator(lines)
+    for token_type, text, (srow, scol), (erow, ecol), l in tokenize.generate_tokens(wrapped_iterator.next_line):
         # print ','.join([str(item) for item in [token_type, text, srow, scol]])
         if prev_token_type == tokenize.INDENT and state == 'in_function':
             positions[first_line] = (srow - 1, scol)
