@@ -65,3 +65,11 @@ class TestDocstringPositionParser(unittest.TestCase):
             '\n',
         ]
         assert_that(docstring_positions(some_file), is_({1: (3, 4), 6: (6, 4)}))
+
+    def test_parse_newline_in_method_def(self):
+        some_file = [
+            'def some(a,\n',
+            '         b, c):\n',
+            '    return a + b + c\n',
+        ]
+        assert_that(docstring_positions(some_file), is_({1: (2, 4)}))

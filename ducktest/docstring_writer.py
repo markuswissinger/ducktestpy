@@ -20,6 +20,7 @@ from future.utils import iteritems
 
 
 def docstring_positions(lines):
+    """:returns a dictionary {line_number_of_def_statement: (write_docstring_to_line_index, docstring_indent)}"""
     positions = {}
     state = ''
     prev_token_type = None

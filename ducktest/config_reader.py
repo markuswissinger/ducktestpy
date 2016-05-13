@@ -51,10 +51,14 @@ class Configuration(object):
 
     @property
     def discover_tests_in_directories(self):
+        if not self._test_directories:
+            return [self.config_path]
         return [os.path.join(self.config_path, discover_dir) for discover_dir in self._test_directories]
 
     @property
     def write_docstrings_in_directories(self):
+        if not self._write_directories:
+            return [self.config_path]
         return [os.path.join(self.config_path, write_dir) for write_dir in self._write_directories]
 
     @property

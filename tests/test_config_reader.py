@@ -58,3 +58,13 @@ class ConfigReaderTest(unittest.TestCase):
         configuration.read(config_file)
 
         assert_that(configuration.top_level_directory, is_('/home/test/project/'))
+
+    def test_empty_file(self):
+        config_file = StringIO('')
+        configuration = Configuration('/home/test/project/')
+        configuration.read(config_file)
+
+        assert_that(configuration.top_level_directory, is_('/home/test/project/'))
+        assert_that(configuration.write_docstrings_in_directories, is_(['/home/test/project']))
+        assert_that(configuration.discover_tests_in_directories, is_(['/home/test/project']))
+        assert_that(configuration.ignore_call_parameter_names, is_([]))
