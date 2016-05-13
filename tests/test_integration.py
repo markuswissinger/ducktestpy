@@ -58,3 +58,12 @@ class TestIntegration(unittest.TestCase):
             '        """\n',
             '        return self.b + a\n',
         ])
+
+    def test_generator(self):
+        conf = ConfigMock('generator')
+        run(conf)
+        self.written.assert_called_once_with(conf.in_sample_path('generator.py'), [
+            'def some_generator():\n',
+            '    """:rtype: generator"""\n',
+            '    yield 1',
+        ])
