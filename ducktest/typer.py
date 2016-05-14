@@ -23,8 +23,6 @@ from collections import defaultdict
 from future.utils import iteritems
 from mock import Mock
 
-from ducktest.docstring_writer import DocstringWriter
-
 CO_GENERATOR = 0x20
 CO_VARARGS = 0x04
 CO_KWARGS = 0x08
@@ -103,6 +101,18 @@ class Finding(object):
         return self.file_name > other.file_name or (self.file_name == other.file_name and
                                                     self.first_line_number > other.first_line_number)
 
+    def __eq__(self, other):
+        if not isinstance(other, Finding):
+            return False
+        return all([
+            self.call_types == other.call_types,
+            self.return_types == other.return_types,
+            self.file_name == other.file_name,
+            self.function_name == other.function_name,
+            self.first_line_number == other.first_line_number,
+            self.docstring == other.docstring,
+        ])
+
     def __str__(self):
         return ', '.join([
             self.file_name,
@@ -111,6 +121,9 @@ class Finding(object):
             str(self.call_types),
             str(self.return_types),
         ])
+
+    def __repr__(self):
+        return str(self)
 
 
 class FrameWrapperFactory(object):
@@ -205,5 +218,4 @@ def run(conf):
     for test_directory in conf.discover_tests_in_directories:
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         debugger.runcall(runner.run, suite)
-    doc_writer = DocstringWriter(debugger)
-    doc_writer.write_all()
+    return debugger

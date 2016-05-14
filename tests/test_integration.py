@@ -1,11 +1,13 @@
 import os
 import unittest
 
+from hamcrest import assert_that, is_
 from mock import Mock
 
 from ducktest import docstring_writer
 
 from ducktest import run
+from ducktest.typer import Finding
 
 
 class ConfigMock(object):
@@ -32,7 +34,23 @@ class TestIntegration(unittest.TestCase):
 
     def test_module_method(self):
         conf = ConfigMock('module_method')
-        run(conf)
+        file_path = conf.in_sample_path('module_method.py')
+
+        typing_debugger = run(conf)
+
+        finding = Finding()
+        finding.file_name = file_path
+        finding.function_name = 'some_method'
+        finding.first_line_number = 1
+        finding.call_types.update({'a': {int}})
+        finding.return_types.update({int})
+        finding.docstring = None
+
+        assert_that(typing_debugger.get_sorted_findings(file_path), is_([finding]))
+        assert_that(typing_debugger.all_file_names(), is_([file_path]))
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
         self.written.assert_called_once_with(conf.in_sample_path('module_method.py'), [
             'def some_method(a):\n',
             '    """\n',
@@ -44,7 +62,10 @@ class TestIntegration(unittest.TestCase):
 
     def test_method_in_class(self):
         conf = ConfigMock('method_in_class')
-        run(conf)
+        typing_debugger = run(conf)
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
         self.written.assert_called_once_with(conf.in_sample_path('method_in_class.py'), [
             'class SomeClass(object):\n',
             '    def __init__(self, b):\n',
@@ -61,7 +82,10 @@ class TestIntegration(unittest.TestCase):
 
     def test_generator(self):
         conf = ConfigMock('generator')
-        run(conf)
+        typing_debugger = run(conf)
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
         self.written.assert_called_once_with(conf.in_sample_path('generator.py'), [
             'def some_generator():\n',
             '    """:rtype: generator"""\n',
@@ -70,7 +94,10 @@ class TestIntegration(unittest.TestCase):
 
     def test_classmethod(self):
         conf = ConfigMock('classmethod')
-        run(conf)
+        typing_debugger = run(conf)
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
         self.written.assert_called_once_with(conf.in_sample_path('classmethod.py'), [
             'class AnotherClass(object):\n',
             '    b = 1\n',

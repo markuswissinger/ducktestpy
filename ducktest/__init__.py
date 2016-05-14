@@ -18,6 +18,7 @@ import os
 import sys
 
 from ducktest.config_reader import Configuration
+from ducktest.docstring_writer import DocstringWriter
 from ducktest.typer import run
 
 
@@ -31,4 +32,6 @@ def main():
 
     configuration = Configuration.from_file_path(config_file_path)
 
-    run(configuration)
+    typing_debugger = run(configuration)
+
+    DocstringWriter(typing_debugger).write_all()
