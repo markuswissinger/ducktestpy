@@ -1,4 +1,5 @@
 import os
+import types
 import unittest
 
 from hamcrest import assert_that, is_
@@ -23,7 +24,7 @@ class ConfigMock(object):
         return os.path.join(self.sample_dir, file_name)
 
 
-class TestIntegration(unittest.TestCase):
+class TestTypeCollection(unittest.TestCase):
     def setUp(self):
         self.old = docstring_writer.write_file
         self.written = Mock()
@@ -49,64 +50,56 @@ class TestIntegration(unittest.TestCase):
         assert_that(typing_debugger.get_sorted_findings(file_path), is_([finding]))
         assert_that(typing_debugger.all_file_names(), is_([file_path]))
 
-        docstring_writer.DocstringWriter(typing_debugger).write_all()
-
-        self.written.assert_called_once_with(conf.in_sample_path('module_method.py'), [
-            'def some_method(a):\n',
-            '    """\n',
-            '    :type a: int\n',
-            '    :rtype: int\n',
-            '    """\n',
-            '    return a\n',
-        ])
-
     def test_method_in_class(self):
         conf = ConfigMock('method_in_class')
+        file_path = conf.in_sample_path('method_in_class.py')
         typing_debugger = run(conf)
 
-        docstring_writer.DocstringWriter(typing_debugger).write_all()
+        finding_5 = Finding()
+        finding_5.file_name = file_path
+        finding_5.function_name = 'some_method'
+        finding_5.first_line_number = 5
+        finding_5.call_types.update({'a': {int}})
+        finding_5.return_types.update({int})
+        finding_5.docstring = None
 
-        self.written.assert_called_once_with(conf.in_sample_path('method_in_class.py'), [
-            'class SomeClass(object):\n',
-            '    def __init__(self, b):\n',
-            '        """:type b: int"""\n',
-            '        self.b = b\n',
-            '\n',
-            '    def some_method(self, a):\n',
-            '        """\n',
-            '        :type a: int\n',
-            '        :rtype: int\n',
-            '        """\n',
-            '        return self.b + a\n',
-        ])
+        finding_2 = Finding()
+        finding_2.file_name = file_path
+        finding_2.function_name = '__init__'
+        finding_2.first_line_number = 2
+        finding_2.call_types.update({'b': {int}})
+        finding_2.docstring = None
+
+        assert_that(typing_debugger.get_sorted_findings(file_path), is_([finding_5, finding_2]))
+        assert_that(typing_debugger.all_file_names(), is_([file_path]))
 
     def test_generator(self):
         conf = ConfigMock('generator')
+        file_path = conf.in_sample_path('generator.py')
         typing_debugger = run(conf)
 
-        docstring_writer.DocstringWriter(typing_debugger).write_all()
+        finding = Finding()
+        finding.file_name = file_path
+        finding.function_name = 'some_generator'
+        finding.first_line_number = 1
+        finding.return_types.update({types.GeneratorType})
+        finding.docstring = None
 
-        self.written.assert_called_once_with(conf.in_sample_path('generator.py'), [
-            'def some_generator():\n',
-            '    """:rtype: generator"""\n',
-            '    yield 1',
-        ])
+        assert_that(typing_debugger.get_sorted_findings(file_path), is_([finding]))
+        assert_that(typing_debugger.all_file_names(), is_([file_path]))
 
     def test_classmethod(self):
         conf = ConfigMock('classmethod')
+        file_path = conf.in_sample_path('classmethod.py')
         typing_debugger = run(conf)
 
-        docstring_writer.DocstringWriter(typing_debugger).write_all()
+        finding = Finding()
+        finding.file_name = file_path
+        finding.function_name = 'some_classmethod'
+        finding.first_line_number = 4
+        finding.call_types.update({'a': {int}})
+        finding.return_types.update({int})
+        finding.docstring = None
 
-        self.written.assert_called_once_with(conf.in_sample_path('classmethod.py'), [
-            'class AnotherClass(object):\n',
-            '    b = 1\n',
-            '\n',
-            '    @classmethod\n',
-            '    def some_classmethod(cls, a):\n',
-            '        """\n',
-            '        :type a: int\n',
-            '        :rtype: int\n',
-            '        """\n',
-            '        return a + cls.b\n',
-        ])
+        assert_that(typing_debugger.get_sorted_findings(file_path), is_([finding]))
+        assert_that(typing_debugger.all_file_names(), is_([file_path]))
