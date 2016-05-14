@@ -67,3 +67,19 @@ class TestIntegration(unittest.TestCase):
             '    """:rtype: generator"""\n',
             '    yield 1',
         ])
+
+    def test_classmethod(self):
+        conf = ConfigMock('classmethod')
+        run(conf)
+        self.written.assert_called_once_with(conf.in_sample_path('classmethod.py'), [
+            'class AnotherClass(object):\n',
+            '    b = 1\n',
+            '\n',
+            '    @classmethod\n',
+            '    def some_classmethod(cls, a):\n',
+            '        """\n',
+            '        :type a: int\n',
+            '        :rtype: int\n',
+            '        """\n',
+            '        return a + cls.b\n',
+        ])
