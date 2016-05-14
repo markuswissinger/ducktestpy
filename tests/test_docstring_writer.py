@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import os
+import types
 import unittest
 
 from hamcrest import assert_that, is_
@@ -21,6 +22,8 @@ from mock import Mock
 
 from ducktest import run, docstring_writer
 from ducktest.docstring_writer import docstring_positions
+from ducktest.typer import Finding
+from tests.sample import sample_findings
 from tests.test_typer import ConfigMock
 
 
@@ -87,12 +90,25 @@ class TestIntegrationWriting(unittest.TestCase):
     def tearDown(self):
         docstring_writer.write_file = self.old
 
+    @staticmethod
+    def in_sample_path(*args):
+        here = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(here, 'sample', *args)
+
+    @staticmethod
+    def typer_mock(file_names, sorted_findings):
+        typer = Mock()
+        typer.all_file_names = Mock(return_value=file_names)
+        typer.get_sorted_findings = Mock(return_value=sorted_findings)
+        return typer
+
     def test_module_method(self):
-        conf = ConfigMock('module_method')
-        typing_debugger = run(conf)
+        full_file = self.in_sample_path('module_method', 'module_method.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.module_method(full_file))
+
         docstring_writer.DocstringWriter(typing_debugger).write_all()
 
-        self.written.assert_called_once_with(conf.in_sample_path('module_method.py'), [
+        self.written.assert_called_once_with(full_file, [
             'def some_method(a):\n',
             '    """\n',
             '    :type a: int\n',
@@ -102,11 +118,12 @@ class TestIntegrationWriting(unittest.TestCase):
         ])
 
     def test_method_in_class(self):
-        conf = ConfigMock('method_in_class')
-        typing_debugger = run(conf)
+        full_file = self.in_sample_path('method_in_class', 'method_in_class.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.method_in_class(full_file))
+
         docstring_writer.DocstringWriter(typing_debugger).write_all()
 
-        self.written.assert_called_once_with(conf.in_sample_path('method_in_class.py'), [
+        self.written.assert_called_once_with(full_file, [
             'class SomeClass(object):\n',
             '    def __init__(self, b):\n',
             '        """:type b: int"""\n',
@@ -121,24 +138,24 @@ class TestIntegrationWriting(unittest.TestCase):
         ])
 
     def test_generator(self):
-        conf = ConfigMock('generator')
-        typing_debugger = run(conf)
+        full_file = self.in_sample_path('generator', 'generator.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.generator(full_file))
 
         docstring_writer.DocstringWriter(typing_debugger).write_all()
 
-        self.written.assert_called_once_with(conf.in_sample_path('generator.py'), [
+        self.written.assert_called_once_with(full_file, [
             'def some_generator():\n',
             '    """:rtype: generator"""\n',
             '    yield 1',
         ])
 
     def test_classmethod(self):
-        conf = ConfigMock('classmethod')
-        typing_debugger = run(conf)
+        full_file = self.in_sample_path('classmethod', 'classmethod.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.class_method(full_file))
 
         docstring_writer.DocstringWriter(typing_debugger).write_all()
 
-        self.written.assert_called_once_with(conf.in_sample_path('classmethod.py'), [
+        self.written.assert_called_once_with(full_file, [
             'class AnotherClass(object):\n',
             '    b = 1\n',
             '\n',
