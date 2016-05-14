@@ -3,9 +3,6 @@ import types
 import unittest
 
 from hamcrest import assert_that, is_
-from mock import Mock
-
-from ducktest import docstring_writer
 
 from ducktest import run
 from ducktest.typer import Finding
@@ -25,14 +22,6 @@ class ConfigMock(object):
 
 
 class TestTypeCollection(unittest.TestCase):
-    def setUp(self):
-        self.old = docstring_writer.write_file
-        self.written = Mock()
-        docstring_writer.write_file = self.written
-
-    def tearDown(self):
-        docstring_writer.write_file = self.old
-
     def test_module_method(self):
         conf = ConfigMock('module_method')
         file_path = conf.in_sample_path('module_method.py')
