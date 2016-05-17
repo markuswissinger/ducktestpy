@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import bdb
+import collections
 import types
 import unittest
 from bdb import Bdb
@@ -60,14 +61,38 @@ def get_docstring(frame):
     return frame.f_code.co_consts[0]
 
 
-def get_type(parameter):
-    if isinstance(parameter, Mock):
-        specification = parameter._spec_class
-        if specification is None:
-            return set()
-        return {specification}
-    else:
-        return {type(parameter)}
+class TypeWrapper(object):
+    def __init__(self, parameter, generator=False):
+        self.is_generator = generator
+        self.type = self.get_type(parameter)
+        self.contained_types = self.get_contained_types(parameter)
+
+    def get_type(self, parameter):
+        if self.is_generator:
+            return types.GeneratorType  # self.type
+        if isinstance(parameter, Mock) and parameter._spec_class:
+            return parameter._spec_class
+        else:
+            return type(parameter)
+
+    @staticmethod
+    def get_contained_types(parameter):
+        contained_types = set()
+        if isinstance(parameter, collections.Container) and isinstance(parameter, collections.Iterable):
+            for contained in parameter:
+                contained_types.add(TypeWrapper(contained))
+        return contained_types
+
+    def __eq__(self, other):
+        if not isinstance(other, TypeWrapper):
+            return False
+        return self.type == other.type and self.contained_types == other.contained_types
+
+    def __hash__(self):
+        return hash((self.type, tuple(sorted(list(self.contained_types)))))
+
+    def __repr__(self):
+        return 'TypeWrapper({}, {})'.format(self.type, self.contained_types)
 
 
 class Finding(object):
@@ -82,11 +107,11 @@ class Finding(object):
     def add_call(self, frame):
         self.__store_constants(frame)
         for key, value in iteritems(frame.call_types):
-            self.call_types[key].update(value)
+            self.call_types[key].add(value)
 
     def add_return(self, frame):
         self.__store_constants(frame)
-        self.return_types.update(frame.return_type)
+        self.return_types.add(frame.return_type)
 
     def __store_constants(self, frame):
         if self.file_name:
@@ -112,6 +137,14 @@ class Finding(object):
             self.first_line_number == other.first_line_number,
             self.docstring == other.docstring,
         ])
+
+    def __hash__(self):
+        return hash((self.call_types,
+                     self.return_types,
+                     self.file_name,
+                     self.function_name,
+                     self.first_line_number,
+                     self.docstring))
 
     def __str__(self):
         return ', '.join([
@@ -165,7 +198,9 @@ class FrameWrapper(object):
                 continue
             try:
                 parameter = get_local_variable(self.frame, variable_name)
-                call_types[variable_name] = get_type(parameter)
+                wrapper = TypeWrapper(parameter)
+                if wrapper.type:
+                    call_types[variable_name] = wrapper
             except KeyError:
                 pass
         return call_types
@@ -173,10 +208,11 @@ class FrameWrapper(object):
     @property
     def return_type(self):
         if is_generator(self.frame):
-            return {types.GeneratorType}
+            return TypeWrapper(self.return_value, generator=True)
+        # TODO remove this test in favor of config
         if self.return_value is None:
             return None
-        return get_type(self.return_value)
+        return TypeWrapper(self.return_value)
 
 
 def defaultdict_of_finding():

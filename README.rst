@@ -26,7 +26,7 @@ install ducktest via pip: *pip install ducktest*
 usage
 -----
 
-call ducktest from the command line: *python ducktest configuration_file*
+call ducktest from the command line: *ducktest configuration_file*
 
 The configuration_file is assumed to be on the top level of your project folder.
 All given paths in that file are relative to its location. It is good practice to keep the

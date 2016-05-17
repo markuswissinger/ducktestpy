@@ -113,7 +113,7 @@ class DocstringWriter(object):
         return name + '.'
 
     def _type_names(self, classes):
-        return ' or '.join([self._module_name(clazz) + clazz.__name__ for clazz in classes])
+        return ' or '.join([self._module_name(wrapper.type) + wrapper.type.__name__ for wrapper in classes])
 
     def _modified_docstring(self, finding, indent):
         new_lines = []

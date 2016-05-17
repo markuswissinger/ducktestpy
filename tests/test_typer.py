@@ -5,8 +5,16 @@ import unittest
 from hamcrest import assert_that, is_
 
 from ducktest import run
-from ducktest.typer import Finding
+from ducktest.typer import Finding, TypeWrapper
 from tests.sample import sample_findings
+
+
+class TypeWrapperTest(unittest.TestCase):
+    def test_equals(self):
+        assert TypeWrapper(1) == TypeWrapper(1)
+
+    def test_unequal(self):
+        assert TypeWrapper(1) != TypeWrapper(2)
 
 
 class ConfigMock(object):
@@ -53,5 +61,7 @@ class TestTypeCollection(unittest.TestCase):
         full_file = conf.in_sample_path('classmethod.py')
         typing_debugger = run(conf)
 
-        assert_that(typing_debugger.get_sorted_findings(full_file), is_(sample_findings.class_method(full_file)))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.class_method(full_file)))
