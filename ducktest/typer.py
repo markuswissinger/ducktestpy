@@ -22,6 +22,7 @@ from bdb import Bdb
 from collections import defaultdict
 
 from future.utils import iteritems
+from past.builtins import basestring
 from mock import Mock
 
 CO_GENERATOR = 0x20
@@ -75,13 +76,20 @@ class TypeWrapper(object):
         else:
             return type(parameter)
 
-    @staticmethod
-    def get_contained_types(parameter):
+    def get_contained_types(self, parameter):
         contained_types = set()
-        if isinstance(parameter, collections.Container) and isinstance(parameter, collections.Iterable):
+        if self._is_iterable_container(parameter):
             for contained in parameter:
                 contained_types.add(TypeWrapper(contained))
         return contained_types
+
+    @staticmethod
+    def _is_iterable_container(parameter):
+        return all([
+            isinstance(parameter, collections.Container),
+            isinstance(parameter, collections.Iterable),
+            not isinstance(parameter, basestring),
+        ])
 
     def __eq__(self, other):
         if not isinstance(other, TypeWrapper):

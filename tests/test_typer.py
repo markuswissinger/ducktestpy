@@ -10,11 +10,17 @@ from tests.sample import sample_findings
 
 
 class TypeWrapperTest(unittest.TestCase):
+    def test_other_type(self):
+        assert TypeWrapper(1) != 1
+
     def test_equals(self):
         assert TypeWrapper(1) == TypeWrapper(1)
 
-    def test_unequal(self):
-        assert TypeWrapper(1) != TypeWrapper(2)
+    def test_unequal_int(self):
+        assert TypeWrapper(1) == TypeWrapper(2)
+
+    def test_unequal_type(self):
+        assert TypeWrapper(1) != TypeWrapper('1')
 
 
 class ConfigMock(object):
