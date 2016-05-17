@@ -71,3 +71,13 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.class_method(full_file)))
+
+    def test_list(self):
+        conf = ConfigMock('list')
+        full_file = conf.in_sample_path('list.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.single_type_list(full_file)))

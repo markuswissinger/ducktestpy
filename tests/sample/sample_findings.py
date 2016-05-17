@@ -52,3 +52,14 @@ def class_method(full_file):
     finding.return_types = {TypeWrapper(2)}
     finding.docstring = None
     return [finding]
+
+
+def single_type_list(full_file):
+    finding = Finding()
+    finding.file_name = full_file
+    finding.function_name = 'get_first_item'
+    finding.first_line_number = 1
+    finding.call_types.update({'a': {TypeWrapper([1])}})
+    finding.return_types.update({TypeWrapper(1)})
+    finding.docstring = None
+    return [finding]

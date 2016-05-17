@@ -106,14 +106,8 @@ class DocstringWriter(object):
         return clean_lines
 
     @staticmethod
-    def _module_name(clazz):
-        name = clazz.__module__
-        if name == '__builtin__' or 'builtins':
-            return ''
-        return name + '.'
-
-    def _type_names(self, classes):
-        return ' or '.join([self._module_name(wrapper.type) + wrapper.type.__name__ for wrapper in classes])
+    def _type_names(classes):
+        return ' or '.join([str(DocstringTypeWrapper(wrapper)) for wrapper in classes])
 
     def _modified_docstring(self, finding, indent):
         new_lines = []
@@ -128,3 +122,18 @@ class DocstringWriter(object):
 
         new_lines = ['"""'] + new_lines + ['"""']
         return [indent * ' ' + line + '\n' for line in new_lines]
+
+
+class DocstringTypeWrapper(object):
+    def __init__(self, type_wrapper):
+        self.type_wrapper = type_wrapper
+
+    @staticmethod
+    def _module_name(clazz):
+        name = clazz.__module__
+        if name == '__builtin__' or 'builtins':
+            return ''
+        return name + '.'
+
+    def __str__(self):
+        return self._module_name(self.type_wrapper.type) + self.type_wrapper.type.__name__

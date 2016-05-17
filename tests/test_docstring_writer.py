@@ -167,3 +167,18 @@ class TestIntegrationWriting(unittest.TestCase):
             '        """\n',
             '        return a + cls.b\n',
         ])
+
+    def test_single_type_list(self):
+        full_file = self.in_sample_path('list', 'list.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.single_type_list(full_file))
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
+        self.written.assert_called_once_with(full_file, [
+            'def get_first_item(a):\n',
+            '    """\n',
+            '    :type a: list\n',
+            '    :rtype: int\n',
+            '    """\n',
+            '    return a[0]\n',
+        ])
