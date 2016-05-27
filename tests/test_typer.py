@@ -81,3 +81,23 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.single_type_list(full_file)))
+
+    def test_imported_types(self):
+        conf = ConfigMock('imported_types')
+        full_file = conf.in_sample_path('imported_types.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.imported_types(full_file)))
+
+    def test_several_calls(self):
+        conf = ConfigMock('several_calls')
+        full_file = conf.in_sample_path('several_calls.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.several_calls(full_file)))

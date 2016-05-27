@@ -131,7 +131,7 @@ class DocstringTypeWrapper(object):
     @staticmethod
     def _module_name(clazz):
         name = clazz.__module__
-        if name == '__builtin__' or 'builtins':
+        if name == '__builtin__' or name == 'builtins':
             return ''
         return name + '.'
 

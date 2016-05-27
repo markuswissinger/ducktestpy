@@ -1,6 +1,7 @@
 import types
 
 from ducktest.typer import Finding, TypeWrapper
+from tests.sample.imported_types.to_import import ToImportA, ToImportB
 
 
 def module_method(full_file):
@@ -60,6 +61,29 @@ def single_type_list(full_file):
     finding.function_name = 'get_first_item'
     finding.first_line_number = 1
     finding.call_types.update({'a': {TypeWrapper([1])}})
+    finding.return_types.update({TypeWrapper(1)})
+    finding.docstring = None
+    return [finding]
+
+
+def imported_types(full_file):
+    finding = Finding()
+    finding.file_name = full_file
+    finding.function_name = 'use_imported_types'
+    finding.first_line_number = 1
+    finding.call_types.update({'a': {TypeWrapper(ToImportA())}})
+    finding.call_types.update({'b': {TypeWrapper(ToImportB())}})
+    finding.return_types.update({TypeWrapper('')})
+    finding.docstring = None
+    return [finding]
+
+
+def several_calls(full_file):
+    finding = Finding()
+    finding.file_name = full_file
+    finding.function_name = 'call_me_several_times'
+    finding.first_line_number = 1
+    finding.call_types.update({'a': {TypeWrapper(1)}})
     finding.return_types.update({TypeWrapper(1)})
     finding.docstring = None
     return [finding]

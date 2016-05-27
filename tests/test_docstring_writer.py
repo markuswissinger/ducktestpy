@@ -14,17 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import os
-import types
 import unittest
 
 from hamcrest import assert_that, is_
 from mock import Mock
 
-from ducktest import run, docstring_writer
-from ducktest.docstring_writer import docstring_positions
-from ducktest.typer import Finding
+from ducktest import docstring_writer
+from ducktest.docstring_writer import docstring_positions, DocstringTypeWrapper
+from ducktest.typer import TypeWrapper
 from tests.sample import sample_findings
-from tests.test_typer import ConfigMock
+from tests.sample.imported_types.to_import import ToImportA
+
+
+class TestDocstringTypeWrapper(unittest.TestCase):
+    def test_module_name(self):
+        wrapper = TypeWrapper(ToImportA())
+        assert_that(str(DocstringTypeWrapper(wrapper)), is_('tests.sample.imported_types.to_import.ToImportA'))
 
 
 class TestDocstringPositionParser(unittest.TestCase):
@@ -181,4 +186,35 @@ class TestIntegrationWriting(unittest.TestCase):
             '    :rtype: int\n',
             '    """\n',
             '    return a[0]\n',
+        ])
+
+    def test_imported_types(self):
+        full_file = self.in_sample_path('imported_types', 'imported_types.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.imported_types(full_file))
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
+        self.written.assert_called_once_with(full_file, [
+            'def use_imported_types(a, b):\n',
+            '    """\n',
+            '    :type a: tests.sample.imported_types.to_import.ToImportA\n',
+            '    :type b: tests.sample.imported_types.to_import.ToImportB\n',
+            '    :rtype: str\n',
+            '    """\n',
+            "    return 'some result'\n",
+        ])
+
+    def test_several_calls(self):
+        full_file = self.in_sample_path('several_calls', 'several_calls.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.several_calls(full_file))
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
+        self.written.assert_called_once_with(full_file, [
+            'def call_me_several_times(a):\n',
+            '    """\n',
+            '    :type a: int\n',
+            '    :rtype: int\n',
+            '    """\n',
+            '    return a\n',
         ])

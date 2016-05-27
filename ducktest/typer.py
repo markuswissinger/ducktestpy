@@ -59,7 +59,10 @@ def get_local_variable(frame, variable_name):
 
 
 def get_docstring(frame):
-    return frame.f_code.co_consts[0]
+    try:
+        return frame.f_code.co_consts[0]
+    except IndexError:
+        return None
 
 
 class TypeWrapper(object):
