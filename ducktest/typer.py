@@ -114,6 +114,7 @@ class Finding(object):
         self.function_name = None
         self.first_line_number = None
         self.docstring = None
+        self.variable_names = None
 
     def add_call(self, frame):
         self.__store_constants(frame)
@@ -131,6 +132,7 @@ class Finding(object):
         self.function_name = frame.function_name
         self.first_line_number = frame.first_line_number
         self.docstring = frame.docstring
+        self.variable_names = frame.variable_names
 
     def __gt__(self, other):
         """:type other: Finding"""
@@ -147,27 +149,18 @@ class Finding(object):
             self.function_name == other.function_name,
             self.first_line_number == other.first_line_number,
             self.docstring == other.docstring,
+            self.variable_names == other.variable_names
         ])
 
-    def __hash__(self):
-        return hash((self.call_types,
-                     self.return_types,
-                     self.file_name,
-                     self.function_name,
-                     self.first_line_number,
-                     self.docstring))
-
-    def __str__(self):
+    def __repr__(self):
         return ', '.join([
             self.file_name,
             self.function_name,
             str(self.first_line_number),
+            str(self.variable_names),
             str(self.call_types),
             str(self.return_types),
         ])
-
-    def __repr__(self):
-        return str(self)
 
 
 class FrameWrapperFactory(object):
@@ -193,6 +186,11 @@ class FrameWrapper(object):
         self.function_name = get_function_name(frame)
         self.first_line_number = get_first_line_number(frame)
         self.docstring = get_docstring(frame)
+
+    @property
+    def variable_names(self):
+        names = list(get_variable_names(self.frame))
+        return tuple([name for name in names if name not in self.excluded_parameter_names])
 
     @property
     def must_be_stored(self):
