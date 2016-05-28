@@ -111,8 +111,8 @@ class DocstringWriter(object):
 
     def _modified_docstring(self, finding, indent):
         new_lines = []
-        for call_parameter, call_types in [(name, finding.call_types[name]) for name in finding.variable_names]:
-            new_lines.append(':type ' + call_parameter + ': ' + self._type_names(call_types))
+        for call_parameter_name, call_types in finding.call_parameters():
+            new_lines.append(':type ' + call_parameter_name + ': ' + self._type_names(call_types))
         if finding.return_types:
             new_lines.append(':rtype: ' + self._type_names(finding.return_types))
         new_lines.extend(self._clean_doclines(finding.docstring))

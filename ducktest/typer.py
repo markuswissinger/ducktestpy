@@ -125,6 +125,10 @@ class Finding(object):
         self.__store_constants(frame)
         self.return_types.add(frame.return_type)
 
+    def call_parameters(self):
+        for name in self.variable_names:
+            yield name, self.call_types[name]
+
     def __store_constants(self, frame):
         if self.file_name:
             return
