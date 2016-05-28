@@ -1,6 +1,7 @@
 import types
 
 from ducktest.typer import Finding, TypeWrapper
+from tests.sample.autospec.autospec import SomeClassToAutospec
 from tests.sample.imported_types.to_import import ToImportA, ToImportB
 
 
@@ -94,4 +95,16 @@ def several_calls(full_file):
     finding.call_types.update({'a': {TypeWrapper(1)}})
     finding.return_types.update({TypeWrapper(1)})
     finding.docstring = None
+    return [finding]
+
+
+def autospec_call(full_file):
+    finding = Finding()
+    finding.file_name = full_file
+    finding.function_name = 'use_autospec'
+    finding.variable_names = ('a',)
+    finding.first_line_number = 4
+    finding.call_types.update({'a': {TypeWrapper(SomeClassToAutospec())}})
+    finding.return_types.update({TypeWrapper('')})
+    finding.docstring = 'use some auto spec, not.'
     return [finding]

@@ -101,3 +101,13 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.several_calls(full_file)))
+
+    def test_autospec_call(self):
+        conf = ConfigMock('autospec')
+        full_file = conf.in_sample_path('autospec.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.autospec_call(full_file)))
