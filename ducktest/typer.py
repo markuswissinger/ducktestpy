@@ -246,7 +246,6 @@ class FrameWrapper(object):
     def return_type(self):
         if is_generator(self.frame):
             return TypeWrapper(self.return_value, generator=True)
-        # TODO remove this test in favor of config
         if self.return_value is None:
             return None
         if isinstance(self.return_value, mock.Mock):
