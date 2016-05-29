@@ -215,8 +215,7 @@ class FrameWrapper(object):
 
     @property
     def variable_names(self):
-        names = list(get_variable_names(self.frame))
-        return tuple([name for name in names if name not in self.excluded_parameter_names])
+        return tuple([name for name in (get_variable_names(self.frame)) if name not in self.excluded_parameter_names])
 
     @property
     def must_be_stored(self):
