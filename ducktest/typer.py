@@ -190,8 +190,7 @@ def import_classes(names):
 
 
 class FrameWrapperFactory(object):
-    def __init__(self, included_directories, excluded_parameter_names, ignore_classes):
-        self.ignore_classes = import_classes(ignore_classes)
+    def __init__(self, included_directories, excluded_parameter_names):
         self.excluded_parameter_names = excluded_parameter_names
         self.included_directories = included_directories
 
@@ -199,16 +198,14 @@ class FrameWrapperFactory(object):
         return FrameWrapper(frame,
                             self.included_directories,
                             self.excluded_parameter_names,
-                            self.ignore_classes,
                             return_value=return_value)
 
 
 class FrameWrapper(object):
-    def __init__(self, frame, included_directories, excluded_parameter_names, ignore_classes, return_value=None):
+    def __init__(self, frame, included_directories, excluded_parameter_names, return_value=None):
         self.frame = frame
         self.included_directories = included_directories
         self.excluded_parameter_names = excluded_parameter_names
-        self.ignore_classes = ignore_classes
         self.return_value = return_value
 
         self.file_name = get_file_name(frame)
@@ -289,8 +286,7 @@ class TypingDebugger(bdb.Bdb):
 
 
 def run(conf):
-    factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names,
-                                  conf.ignore_classes)
+    factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
     debugger = TypingDebugger(factory)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner()

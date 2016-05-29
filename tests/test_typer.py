@@ -38,7 +38,6 @@ class ConfigMock(object):
         self.discover_tests_in_directories = [self.sample_dir]
         self.write_docstrings_in_directories = [self.sample_dir]
         self.ignore_call_parameter_names = ['self', 'cls']
-        self.ignore_classes = ['mock.Mock']
 
     def in_sample_path(self, file_name):
         return os.path.join(self.sample_dir, file_name)

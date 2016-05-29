@@ -29,7 +29,6 @@ class Configuration(object):
             'do_not_execute_tests_in': self._remove_test_path,
             'exclude_parameter_names': self._exclude_parameter_names,
             'top_level_dir': self._add_top_level_dir,
-            'ignore_classes': self._add_classes_to_ignore,
         }
         self._top_level_directory = ''
         self._test_directories = []
@@ -37,7 +36,6 @@ class Configuration(object):
         self._write_directories = []
         self._ignore_write_directories = []
         self.ignore_call_parameter_names = []
-        self.ignore_classes = []
         self.config_path = os.path.split(file_path)[0]
 
     @classmethod
@@ -64,12 +62,11 @@ class Configuration(object):
         return [os.path.join(self.config_path, write_dir) for write_dir in self._write_directories]
 
     def __str__(self):
-        return 'top_level_directory: {}, discover_tests_in: {}, write_in: {}, ignore_parameter_names: {}, ignore_classes: {}'.format(
+        return 'top_level_directory: {}, discover_tests_in: {}, write_in: {}, ignore_parameter_names: {}'.format(
             self.top_level_directory,
             self.discover_tests_in_directories,
             self.write_docstrings_in_directories,
             self.ignore_call_parameter_names,
-            self.ignore_classes
         )
 
     def _os_path(self, path):
@@ -89,9 +86,6 @@ class Configuration(object):
 
     def _exclude_parameter_names(self, names):
         self.ignore_call_parameter_names.extend(names)
-
-    def _add_classes_to_ignore(self, names):
-        self.ignore_classes.extend(names)
 
     def _add_top_level_dir(self, paths):
         self._top_level_directory = self._os_path(paths[0])
