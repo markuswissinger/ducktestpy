@@ -237,9 +237,10 @@ class FrameWrapper(object):
             return TypeWrapper(self.return_value, generator=True)
         if self.return_value is None:
             return None
-        if isinstance(self.return_value, mock.Mock):
-            return None
-        return TypeWrapper(self.return_value)
+        wrapper = TypeWrapper(self.return_value)
+        if wrapper.type:
+            return wrapper
+        return None
 
 
 def defaultdict_of_finding():
