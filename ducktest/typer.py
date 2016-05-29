@@ -16,6 +16,7 @@ limitations under the License.
 
 import bdb
 import collections
+import importlib
 import types
 import unittest
 from bdb import Bdb
@@ -23,7 +24,7 @@ from collections import defaultdict
 
 from future.utils import iteritems
 from past.builtins import basestring
-from mock import Mock
+from mock import Mock, mock
 
 CO_GENERATOR = 0x20
 CO_VARARGS = 0x04
@@ -73,7 +74,7 @@ class TypeWrapper(object):
 
     def get_type(self, parameter):
         if self.is_generator:
-            return types.GeneratorType  # self.type
+            return types.GeneratorType
         if isinstance(parameter, Mock) and parameter._spec_class:
             return parameter._spec_class
         else:
@@ -100,7 +101,7 @@ class TypeWrapper(object):
         return self.type == other.type and self.contained_types == other.contained_types
 
     def __hash__(self):
-        return hash((self.type, tuple(sorted(list(self.contained_types)))))
+        return hash(tuple([self.type] + sorted(list(self.contained_types))))
 
     def __repr__(self):
         return 'TypeWrapper({}, {})'.format(self.type, self.contained_types)
@@ -156,6 +157,17 @@ class Finding(object):
             self.variable_names == other.variable_names
         ])
 
+    def __hash__(self):
+        return hash((
+            self.call_types,
+            self.return_types,
+            self.file_name,
+            self.function_name,
+            self.first_line_number,
+            self.docstring,
+            self.variable_names
+        ))
+
     def __repr__(self):
         return ', '.join([
             self.file_name,
@@ -167,8 +179,19 @@ class Finding(object):
         ])
 
 
+def import_classes(names):
+    classes = []
+    for name in names:
+        module_name, class_name = name.rsplit('.', 1)
+        imported_module = importlib.import_module(module_name)
+        imported_class = getattr(imported_module, class_name)
+        classes.append(imported_class)
+    return classes
+
+
 class FrameWrapperFactory(object):
-    def __init__(self, included_directories, excluded_parameter_names):
+    def __init__(self, included_directories, excluded_parameter_names, ignore_classes):
+        self.ignore_classes = import_classes(ignore_classes)
         self.excluded_parameter_names = excluded_parameter_names
         self.included_directories = included_directories
 
@@ -176,14 +199,16 @@ class FrameWrapperFactory(object):
         return FrameWrapper(frame,
                             self.included_directories,
                             self.excluded_parameter_names,
+                            self.ignore_classes,
                             return_value=return_value)
 
 
 class FrameWrapper(object):
-    def __init__(self, frame, included_directories, excluded_parameter_names, return_value=None):
+    def __init__(self, frame, included_directories, excluded_parameter_names, ignore_classes, return_value=None):
         self.frame = frame
         self.included_directories = included_directories
         self.excluded_parameter_names = excluded_parameter_names
+        self.ignore_classes = ignore_classes
         self.return_value = return_value
 
         self.file_name = get_file_name(frame)
@@ -211,6 +236,8 @@ class FrameWrapper(object):
                 continue
             try:
                 parameter = get_local_variable(self.frame, variable_name)
+                if isinstance(parameter, mock.Mock) and parameter._spec_class is None:
+                    continue
                 wrapper = TypeWrapper(parameter)
                 if wrapper.type:
                     call_types[variable_name] = wrapper
@@ -224,6 +251,8 @@ class FrameWrapper(object):
             return TypeWrapper(self.return_value, generator=True)
         # TODO remove this test in favor of config
         if self.return_value is None:
+            return None
+        if isinstance(self.return_value, mock.Mock):
             return None
         return TypeWrapper(self.return_value)
 
@@ -260,7 +289,8 @@ class TypingDebugger(bdb.Bdb):
 
 
 def run(conf):
-    factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
+    factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names,
+                                  conf.ignore_classes)
     debugger = TypingDebugger(factory)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner()

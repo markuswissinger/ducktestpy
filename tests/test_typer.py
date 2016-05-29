@@ -3,6 +3,7 @@ import types
 import unittest
 
 from hamcrest import assert_that, is_
+from mock import Mock
 
 from ducktest import run
 from ducktest.typer import Finding, TypeWrapper
@@ -22,6 +23,12 @@ class TypeWrapperTest(unittest.TestCase):
     def test_unequal_type(self):
         assert TypeWrapper(1) != TypeWrapper('1')
 
+    def test_in_set(self):
+        a = TypeWrapper(1)
+        b = TypeWrapper(2)
+        c = TypeWrapper(3)
+        assert_that({a, b}, is_({c}))
+
 
 class ConfigMock(object):
     def __init__(self, path):
@@ -31,6 +38,7 @@ class ConfigMock(object):
         self.discover_tests_in_directories = [self.sample_dir]
         self.write_docstrings_in_directories = [self.sample_dir]
         self.ignore_call_parameter_names = ['self', 'cls']
+        self.ignore_classes = ['mock.Mock']
 
     def in_sample_path(self, file_name):
         return os.path.join(self.sample_dir, file_name)
@@ -111,3 +119,13 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.autospec_call(full_file)))
+
+    def test_plain_mock(self):
+        conf = ConfigMock('plain_mock')
+        full_file = conf.in_sample_path('plain_mock.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.plain_mock(full_file)))
