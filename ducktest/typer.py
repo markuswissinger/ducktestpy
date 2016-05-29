@@ -216,7 +216,7 @@ class FrameWrapper(object):
             except KeyError:
                 continue
             wrapper = TypeWrapper(parameter)
-            if wrapper.type:
+            if wrapper:
                 call_types[variable_name] = wrapper
         return call_types
 
