@@ -77,6 +77,8 @@ class TypeWrapper(object):
             return types.GeneratorType
         if isinstance(parameter, Mock) and parameter._spec_class:
             return parameter._spec_class
+        if isinstance(parameter, Mock):
+            return None
         else:
             return type(parameter)
 
@@ -232,8 +234,6 @@ class FrameWrapper(object):
                 continue
             try:
                 parameter = get_local_variable(self.frame, variable_name)
-                if isinstance(parameter, mock.Mock) and parameter._spec_class is None:
-                    continue
                 wrapper = TypeWrapper(parameter)
                 if wrapper.type:
                     call_types[variable_name] = wrapper
