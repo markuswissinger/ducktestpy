@@ -24,6 +24,7 @@ from ducktest.typer import run
 
 def main():
     """Script entry point"""
+    print('ducktest 0.1.2')
     given_config_file_path = sys.argv[1]
     if os.path.isabs(given_config_file_path):
         config_file_path = given_config_file_path
