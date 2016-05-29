@@ -120,3 +120,14 @@ def plain_mock(full_file):
     finding.return_types.update({TypeWrapper(1)})
     finding.docstring = None
     return [finding]
+
+
+def none_finding(full_file):
+    finding = Finding()
+    finding.file_name = full_file
+    finding.function_name = 'some_method'
+    finding.variable_names = ('a',)
+    finding.first_line_number = 1
+    finding.call_types.update({'a': {TypeWrapper(None)}})
+    finding.docstring = None
+    return [finding]

@@ -128,3 +128,13 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.plain_mock(full_file)))
+
+    def test_none_type(self):
+        conf = ConfigMock('none')
+        full_file = conf.in_sample_path('none.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.none_finding(full_file)))
