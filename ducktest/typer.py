@@ -25,6 +25,7 @@ from collections import defaultdict
 from future.utils import iteritems
 from mock import Mock, mock
 from past.builtins import basestring
+from builtins import object
 
 CO_GENERATOR = 0x20
 CO_VARARGS = 0x04
@@ -108,6 +109,9 @@ class TypeWrapper(object):
 
     def __repr__(self):
         return 'TypeWrapper({}, {})'.format(self.type, self.contained_types)
+
+    def __bool__(self):
+        return bool(self.type)
 
 
 class Finding(object):
@@ -219,16 +223,14 @@ class FrameWrapper(object):
     @property
     def call_types(self):
         call_types = {}
-        for variable_name in get_variable_names(self.frame):
-            if variable_name in self.excluded_parameter_names:
-                continue
+        for variable_name in self.variable_names:
             try:
                 parameter = get_local_variable(self.frame, variable_name)
-                wrapper = TypeWrapper(parameter)
-                if wrapper.type:
-                    call_types[variable_name] = wrapper
             except KeyError:
-                pass
+                continue
+            wrapper = TypeWrapper(parameter)
+            if wrapper.type:
+                call_types[variable_name] = wrapper
         return call_types
 
     @property
@@ -237,10 +239,7 @@ class FrameWrapper(object):
             return TypeWrapper(self.return_value, generator=True)
         if self.return_value is None:
             return None
-        wrapper = TypeWrapper(self.return_value)
-        if wrapper.type:
-            return wrapper
-        return None
+        return TypeWrapper(self.return_value)
 
 
 def defaultdict_of_finding():
