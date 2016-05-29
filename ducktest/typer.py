@@ -175,16 +175,6 @@ class Finding(object):
         ])
 
 
-def import_classes(names):
-    classes = []
-    for name in names:
-        module_name, class_name = name.rsplit('.', 1)
-        imported_module = importlib.import_module(module_name)
-        imported_class = getattr(imported_module, class_name)
-        classes.append(imported_class)
-    return classes
-
-
 class FrameWrapperFactory(object):
     def __init__(self, included_directories, excluded_parameter_names):
         self.excluded_parameter_names = excluded_parameter_names
@@ -215,10 +205,7 @@ class FrameWrapper(object):
 
     @property
     def must_be_stored(self):
-        for included_directory in self.included_directories:
-            if get_file_name(self.frame).startswith(included_directory):
-                return True
-        return False
+        return any((self.file_name.startswith(included_directory) for included_directory in self.included_directories))
 
     @property
     def call_types(self):
