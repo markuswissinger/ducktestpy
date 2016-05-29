@@ -23,8 +23,8 @@ from bdb import Bdb
 from collections import defaultdict
 
 from future.utils import iteritems
-from past.builtins import basestring
 from mock import Mock, mock
+from past.builtins import basestring
 
 CO_GENERATOR = 0x20
 CO_VARARGS = 0x04
@@ -75,10 +75,11 @@ class TypeWrapper(object):
     def get_type(self, parameter):
         if self.is_generator:
             return types.GeneratorType
-        if isinstance(parameter, Mock) and parameter._spec_class:
-            return parameter._spec_class
         if isinstance(parameter, Mock):
-            return None
+            if parameter._spec_class:
+                return parameter._spec_class
+            else:
+                return None
         else:
             return type(parameter)
 
@@ -158,17 +159,6 @@ class Finding(object):
             self.docstring == other.docstring,
             self.variable_names == other.variable_names
         ])
-
-    def __hash__(self):
-        return hash((
-            self.call_types,
-            self.return_types,
-            self.file_name,
-            self.function_name,
-            self.first_line_number,
-            self.docstring,
-            self.variable_names
-        ))
 
     def __repr__(self):
         return ', '.join([
