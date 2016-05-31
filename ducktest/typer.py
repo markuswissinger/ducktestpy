@@ -122,12 +122,13 @@ class Finding(object):
         self.function_name = None
         self.first_line_number = None
         self.docstring = None
-        self.variable_names = None
+        self.variable_names = ()
 
     def add_call(self, frame):
         self.__store_constants(frame)
         for key, value in iteritems(frame.call_types):
             self.call_types[key].add(value)
+        self.variable_names = tuple([name for name in frame.variable_names if name in frame.call_types])
 
     def add_return(self, frame):
         self.__store_constants(frame)
@@ -135,7 +136,8 @@ class Finding(object):
 
     def call_parameters(self):
         for name in self.variable_names:
-            yield name, self.call_types[name]
+            if self.call_types[name]:
+                yield name, self.call_types[name]
 
     def __store_constants(self, frame):
         if self.file_name:
@@ -144,7 +146,6 @@ class Finding(object):
         self.function_name = frame.function_name
         self.first_line_number = frame.first_line_number
         self.docstring = frame.docstring
-        self.variable_names = frame.variable_names
 
     def __gt__(self, other):
         """:type other: Finding"""

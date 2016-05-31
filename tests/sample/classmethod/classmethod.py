@@ -3,4 +3,5 @@ class AnotherClass(object):
 
     @classmethod
     def some_classmethod(cls, a):
+        c = a
         return a + cls.b

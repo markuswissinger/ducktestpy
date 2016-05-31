@@ -170,6 +170,7 @@ class TestIntegrationWriting(unittest.TestCase):
             '        :type a: int\n',
             '        :rtype: int\n',
             '        """\n',
+            '        c = a\n',
             '        return a + cls.b\n',
         ])
 
