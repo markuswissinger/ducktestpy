@@ -131,3 +131,33 @@ def none_finding(full_file):
     finding.call_types.update({'a': {TypeWrapper(None)}})
     finding.docstring = None
     return [finding]
+
+
+def function_finding(full_file):
+    finding_9 = Finding()
+    finding_9.file_name = full_file
+    finding_9.function_name = 'b_method'
+    finding_9.variable_names = tuple()
+    finding_9.first_line_number = 9
+    # finding_9.call_types.update({'callable_parameter': {TypeWrapper(none_finding)}})
+    finding_9.return_types.update({TypeWrapper(1)})
+    finding_9.docstring = None
+
+    finding_5 = Finding()
+    finding_5.file_name = full_file
+    finding_5.function_name = 'a_method'
+    finding_5.variable_names = ('callable_parameter',)
+    finding_5.first_line_number = 5
+    finding_5.call_types.update({'callable_parameter': {TypeWrapper(none_finding)}})
+    finding_5.return_types.update({TypeWrapper('1')})
+    finding_5.docstring = None
+
+    finding_1 = Finding()
+    finding_1.file_name = full_file
+    finding_1.function_name = 'some_method'
+    finding_1.variable_names = ('a',)
+    finding_1.first_line_number = 1
+    finding_1.call_types.update({'a': {TypeWrapper('1')}})
+    finding_1.return_types.update({TypeWrapper('1')})
+    finding_1.docstring = None
+    return [finding_9, finding_5, finding_1]

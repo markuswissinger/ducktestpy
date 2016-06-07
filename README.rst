@@ -78,6 +78,6 @@ known problems/bugs/TODOs
 - Currently failing tests contribute type information, although it is potentially incorrect. Execute ducktest only
   while all tests pass.
 - ducktest collects all types used in tests, even if they are sub- or supertypes of each other
-- The types of objects in container types are not resolved yet.
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
   create warnings in static type checkers.
+- Old style classes are not resolved yet

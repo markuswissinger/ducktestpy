@@ -106,15 +106,15 @@ class DocstringWriter(object):
         return clean_lines
 
     @staticmethod
-    def _type_names(classes):
-        return ' or '.join([str(DocstringTypeWrapper(wrapper)) for wrapper in classes])
+    def _unique_type_names(type_wrappers):
+        return ' or '.join(set([str(DocstringTypeWrapper(wrapper)) for wrapper in type_wrappers]))
 
     def _modified_docstring(self, finding, indent):
         new_lines = []
         for call_parameter_name, call_types in finding.call_parameters():
-            new_lines.append(':type ' + call_parameter_name + ': ' + self._type_names(call_types))
+            new_lines.append(':type ' + call_parameter_name + ': ' + self._unique_type_names(call_types))
         if finding.return_types:
-            new_lines.append(':rtype: ' + self._type_names(finding.return_types))
+            new_lines.append(':rtype: ' + self._unique_type_names(finding.return_types))
         new_lines.extend(self._clean_doclines(finding.docstring))
 
         if len(new_lines) == 1:
@@ -135,5 +135,11 @@ class DocstringTypeWrapper(object):
             return ''
         return name + '.'
 
+    def _full_name(self, a_type):
+        return self._module_name(a_type) + a_type.__name__
+
     def __str__(self):
-        return self._module_name(self.type_wrapper.type) + self.type_wrapper.type.__name__
+        full_name = self._full_name(self.type_wrapper.type)
+        if self.type_wrapper.contained_types:
+            return ' or '.join([full_name+' of '+self._full_name(contained) for contained in self.type_wrapper.contained_types])
+        return full_name

@@ -88,7 +88,7 @@ class TypeWrapper(object):
         contained_types = set()
         if self._is_iterable_container(parameter):
             for contained in parameter:
-                contained_types.add(TypeWrapper(contained))
+                contained_types.add(self.get_type(contained))
         return contained_types
 
     @staticmethod
