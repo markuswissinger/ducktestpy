@@ -13,7 +13,7 @@ def module_method(full_file):
     finding.first_line_number = 1
     finding.call_types.update({'a': {TypeWrapper(1)}})
     finding.return_types.update({TypeWrapper(1)})
-    finding.docstring = None
+    finding.docstring = 'A newline \\n there\n    and a real one.'
     return [finding]
 
 

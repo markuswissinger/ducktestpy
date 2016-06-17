@@ -118,6 +118,8 @@ class TestIntegrationWriting(unittest.TestCase):
             '    """\n',
             '    :type a: int\n',
             '    :rtype: int\n',
+            '    A newline \\n there\n',
+            '    and a real one.\n',
             '    """\n',
             '    return a\n',
         ])

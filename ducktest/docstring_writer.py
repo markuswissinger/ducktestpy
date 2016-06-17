@@ -141,5 +141,5 @@ class DocstringTypeWrapper(object):
     def __str__(self):
         full_name = self._full_name(self.type_wrapper.type)
         if self.type_wrapper.contained_types:
-            return ' or '.join([full_name+' of '+self._full_name(contained) for contained in self.type_wrapper.contained_types])
+            return ' or '.join([full_name+' of '+self._full_name(contained) for contained in self.type_wrapper.contained_types if contained])
         return full_name

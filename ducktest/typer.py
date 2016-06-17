@@ -16,14 +16,13 @@ limitations under the License.
 
 import bdb
 import collections
-import importlib
 import types
 import unittest
 from bdb import Bdb
 from collections import defaultdict
 
 from future.utils import iteritems
-from mock import Mock, mock
+from mock import Mock
 from past.builtins import basestring
 from builtins import object
 
@@ -126,9 +125,10 @@ class Finding(object):
 
     def add_call(self, frame):
         self.__store_constants(frame)
-        for key, value in iteritems(frame.call_types):
+        types = frame.call_types
+        for key, value in iteritems(types):
             self.call_types[key].add(value)
-        self.variable_names = tuple([name for name in frame.variable_names if name in frame.call_types])
+        self.variable_names = tuple([name for name in frame.variable_names if name in types])
 
     def add_return(self, frame):
         self.__store_constants(frame)

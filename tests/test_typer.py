@@ -50,7 +50,11 @@ class TestTypeCollection(unittest.TestCase):
 
         typing_debugger = run(conf)
 
-        assert_that(typing_debugger.get_sorted_findings(full_file), is_(sample_findings.module_method(full_file)))
+        findings = typing_debugger.get_sorted_findings(full_file)
+        sample = sample_findings.module_method(full_file)
+
+        assert_that(findings[0].docstring, is_(sample[0].docstring))
+        assert_that(findings, is_(sample))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
     def test_method_in_class(self):
