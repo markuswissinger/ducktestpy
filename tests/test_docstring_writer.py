@@ -178,15 +178,15 @@ class TestIntegrationWriting(unittest.TestCase):
 
     def test_single_type_list(self):
         full_file = self.in_sample_path('list', 'list.py')
-        typing_debugger = self.typer_mock([full_file], sample_findings.single_type_list(full_file))
+        typing_debugger = self.typer_mock([full_file], sample_findings.some_list(full_file))
 
         docstring_writer.DocstringWriter(typing_debugger).write_all()
 
         self.written.assert_called_once_with(full_file, [
             'def get_first_item(a):\n',
             '    """\n',
-            '    :type a: list of int\n',
-            '    :rtype: int\n',
+            '    :type a: list of str or list of list or list of int\n',
+            '    :rtype: int or str or list of int\n',
             '    """\n',
             '    return a[0]\n',
         ])

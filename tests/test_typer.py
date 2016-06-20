@@ -91,7 +91,7 @@ class TestTypeCollection(unittest.TestCase):
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
         findings = typing_debugger.get_sorted_findings(full_file)
-        assert_that(findings, is_(sample_findings.single_type_list(full_file)))
+        assert_that(findings, is_(sample_findings.some_list(full_file)))
 
     def test_imported_types(self):
         conf = ConfigMock('imported_types')

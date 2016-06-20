@@ -16,8 +16,6 @@ limitations under the License.
 
 import tokenize
 
-from future.utils import iteritems
-
 
 class WrappedIterator(object):
     """python3 compatibility"""
@@ -107,7 +105,11 @@ class DocstringWriter(object):
 
     @staticmethod
     def _unique_type_names(type_wrappers):
-        return ' or '.join(set([str(DocstringTypeWrapper(wrapper)) for wrapper in type_wrappers]))
+        the_types=[]
+        for wrapper in type_wrappers:
+            for some in DocstringTypeWrapper(wrapper).contained():
+                the_types.append(some)
+        return ' or '.join(set(the_types))
 
     def _modified_docstring(self, finding, indent):
         new_lines = []
@@ -138,8 +140,17 @@ class DocstringTypeWrapper(object):
     def _full_name(self, a_type):
         return self._module_name(a_type) + a_type.__name__
 
+    def contained(self):
+        full_name = self._full_name(self.type_wrapper.type)
+        if self.type_wrapper.contained_types:
+            return [full_name + ' of ' + self._full_name(contained) for contained in self.type_wrapper.contained_types if
+                    contained]
+        return [full_name]
+
     def __str__(self):
         full_name = self._full_name(self.type_wrapper.type)
         if self.type_wrapper.contained_types:
-            return ' or '.join([full_name+' of '+self._full_name(contained) for contained in self.type_wrapper.contained_types if contained])
+            return ' or '.join(
+                [full_name + ' of ' + self._full_name(contained) for contained in self.type_wrapper.contained_types if
+                 contained])
         return full_name

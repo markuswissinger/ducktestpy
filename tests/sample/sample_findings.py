@@ -61,16 +61,17 @@ def class_method(full_file):
     return [finding]
 
 
-def single_type_list(full_file):
-    finding = Finding()
-    finding.file_name = full_file
-    finding.function_name = 'get_first_item'
-    finding.variable_names = ('a',)
-    finding.first_line_number = 1
-    finding.call_types.update({'a': {TypeWrapper([1])}})
-    finding.return_types.update({TypeWrapper(1)})
-    finding.docstring = None
-    return [finding]
+def some_list(full_file):
+    #get_first_item, 1, ('a',), defaultdict(<type 'set'>, {'a': set([TypeWrapper(<type 'list'>, set([<type 'int'>])), TypeWrapper(<type 'list'>, set([<type 'str'>])), TypeWrapper(<type 'list'>, set([<type 'list'>, <type 'str'>, <type 'int'>]))])}), set([TypeWrapper(<type 'list'>, set([<type 'int'>])), TypeWrapper(<type 'int'>, set([])), TypeWrapper(<type 'str'>, set([]))])]>
+    finding_1 = Finding()
+    finding_1.file_name = full_file
+    finding_1.function_name = 'get_first_item'
+    finding_1.variable_names = ('a',)
+    finding_1.first_line_number = 1
+    finding_1.call_types.update({'a': {TypeWrapper([1]), TypeWrapper(['']), TypeWrapper([[],1,''])}})
+    finding_1.return_types.update({TypeWrapper(1), TypeWrapper(''), TypeWrapper([1])})
+    finding_1.docstring = None
+    return [finding_1]
 
 
 def imported_types(full_file):
