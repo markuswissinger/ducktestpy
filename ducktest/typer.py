@@ -91,6 +91,10 @@ class TypeWrapper(object):
         return contained_types
 
     @staticmethod
+    def _is_mapping_type(parameter):
+        return isinstance(parameter, collections.Mapping)
+
+    @staticmethod
     def _is_iterable_container(parameter):
         return all([
             isinstance(parameter, collections.Container),
