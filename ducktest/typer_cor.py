@@ -1,6 +1,9 @@
 import abc
+import collections
 import types
 from collections import OrderedDict
+
+from future.utils import iteritems
 
 CO_GENERATOR = 0x20
 
@@ -9,11 +12,11 @@ def is_generator(frame):
     return frame.f_code.co_flags & CO_GENERATOR != 0
 
 
-def get_file_name(frame):
+def file_name(frame):
     return frame.f_code.co_filename
 
 
-def get_first_line_number(frame):
+def first_line_number(frame):
     return frame.f_code.co_firstlineno
 
 
@@ -22,16 +25,6 @@ def get_docstring(frame):
         return frame.f_code.co_consts[0]
     except IndexError:
         return None
-
-
-def call_parameters(frame):
-    parameters = OrderedDict()
-    for parameter_name in frame.f_code.co_varnames:
-        try:
-            parameters[parameter_name] = frame.f_locals[parameter_name]
-        except(KeyError):
-            pass
-    return parameters
 
 
 class Processor(object):
@@ -84,9 +77,9 @@ class IncludedDirectoryValidater(Processor):
         super(IncludedDirectoryValidater, self).__init__()
         self.included_directories = included_directories
 
-    def process(self, frame_wrapper):
-        if self.__is_included(frame_wrapper.file_name):
-            self.next_processor.process(frame_wrapper)
+    def process(self, frame, *args):
+        if self.__is_included(file_name(frame)):
+            self.next_processor.process(frame, *args)
 
     def __is_included(self, file_name):
         for included_directory in self.included_directories:
@@ -94,11 +87,63 @@ class IncludedDirectoryValidater(Processor):
                 return True
 
 
+class CallTypeFinder(Processor):
+    def __init__(self, parameter_processor):
+        super(CallTypeFinder, self).__init__()
+        self.parameter_processor = parameter_processor
+
+    def process(self, frame, *args):
+        for name, value in self.call_parameters(frame):
+            self.parameter_processor.process(name, value, frame)
+
+    @staticmethod
+    def call_parameters(frame):
+        parameters = OrderedDict()
+        for parameter_name in frame.f_code.co_varnames:
+            try:
+                parameters[parameter_name] = frame.f_locals[parameter_name]
+            except(KeyError):
+                pass
+        return iteritems(parameters)
+
+
+class NameValidater(Processor):
+    def __init__(self, excluded_names):
+        super(NameValidater, self).__init__()
+        self.excluded_names = excluded_names
+
+    def process(self, name, value, frame):
+        if name in self.excluded_names:
+            return
+        self.next_processor.process(value, frame)
+
+
+class MappingTypeStorer(Processor):
+    def __init__(self, stored_types):
+        super(MappingTypeStorer, self).__init__()
+        self.stored_types = stored_types
+
+    def process(self, parameter_value, frame):
+        if isinstance(parameter_value, collections.Mapping):
+            type_set = set()
+            for key, value in iteritems(parameter_value):
+                type_tuple = type(parameter_value), type(key), type(value)
+                type_set.add(type_tuple)
+
+
+
 class Setup(object):
-    def __init__(self):
+    def __init__(self, conf):
         self.call_processor = chain(
+            IncludedDirectoryValidater(conf.included_directories),
+            CallTypeFinder(chain(
+                NameValidater(conf.excluded_names),
+
+            ))
 
         )
         self.return_processor = chain(
+            ReturnValueValidater(),
+            IncludedDirectoryValidater(conf.included_directories),
 
         )
