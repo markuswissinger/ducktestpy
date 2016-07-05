@@ -162,3 +162,15 @@ def function_finding(full_file):
     finding_1.return_types.update({TypeWrapper('1')})
     finding_1.docstring = None
     return [finding_9, finding_5, finding_1]
+
+
+def dict_finding(full_file):
+    finding_1 = Finding()
+    finding_1.file_name = full_file
+    finding_1.function_name = 'some_method'
+    finding_1.variable_names = ('a',)
+    finding_1.first_line_number = 1
+    finding_1.call_types.update({'a': {TypeWrapper({1:'2'})}})
+    finding_1.return_types.update({TypeWrapper({1:'2'})})
+    finding_1.docstring = None
+    return [finding_1]

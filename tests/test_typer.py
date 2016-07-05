@@ -152,3 +152,13 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.function_finding(full_file)))
+
+    def test_dict(self):
+        conf = ConfigMock('dict')
+        full_file = conf.in_sample_path('dict.py')
+        typing_debugger = run(conf)
+
+        assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        findings = typing_debugger.get_sorted_findings(full_file)
+        assert_that(findings, is_(sample_findings.dict_finding(full_file)))

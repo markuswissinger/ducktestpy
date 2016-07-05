@@ -16,6 +16,8 @@ limitations under the License.
 
 import tokenize
 
+from future.utils import iteritems
+
 
 class WrappedIterator(object):
     """python3 compatibility"""
@@ -142,10 +144,12 @@ class DocstringTypeWrapper(object):
 
     def contained(self):
         full_name = self._full_name(self.type_wrapper.type)
-        if self.type_wrapper.contained_types:
+        if self.type_wrapper.contained_types or self.type_wrapper.mapped_types:
             return [full_name + ' of ' + self._full_name(contained) for contained in self.type_wrapper.contained_types
                     if
-                    contained]
+                    contained] + [full_name + ' of ({}, {})'.format(self._full_name(key), self._full_name(value)) for
+                                  key, value in self.type_wrapper.mapped_types]
+
         return [full_name]
 
     def __str__(self):

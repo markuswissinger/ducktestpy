@@ -71,6 +71,7 @@ class TypeWrapper(object):
         self.is_generator = generator
         self.type = self.get_type(parameter)
         self.contained_types = self.get_contained_types(parameter)
+        self.mapped_types = self.get_mapped_types(parameter)
 
     def get_type(self, parameter):
         if self.is_generator:
@@ -90,9 +91,12 @@ class TypeWrapper(object):
                 contained_types.add(self.get_type(contained))
         return contained_types
 
-    @staticmethod
-    def _is_mapping_type(parameter):
-        return isinstance(parameter, collections.Mapping)
+    def get_mapped_types(self, parameter):
+        mapped_types = set()
+        if isinstance(parameter, collections.Mapping):
+            for key, value in iteritems(parameter):
+                mapped_types.add((self.get_type(key), self.get_type(value)))
+        return mapped_types
 
     @staticmethod
     def _is_iterable_container(parameter):
@@ -100,12 +104,13 @@ class TypeWrapper(object):
             isinstance(parameter, collections.Container),
             isinstance(parameter, collections.Iterable),
             not isinstance(parameter, basestring),
+            not isinstance(parameter, collections.Mapping)
         ])
 
     def __eq__(self, other):
         if not isinstance(other, TypeWrapper):
             return False
-        return self.type == other.type and self.contained_types == other.contained_types
+        return self.type == other.type and self.contained_types == other.contained_types and self.mapped_types == other.mapped_types
 
     def __hash__(self):
         return hash(tuple([self.type] + sorted(list(self.contained_types))))

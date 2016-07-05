@@ -185,8 +185,8 @@ class TestIntegrationWriting(unittest.TestCase):
         self.written.assert_called_once_with(full_file, [
             'def get_first_item(a):\n',
             '    """\n',
-            '    :type a: list of str or list of list or list of int\n',
-            '    :rtype: int or str or list of int\n',
+            '    :type a: list of int or list of list or list of str\n',
+            '    :rtype: int or list of int or str\n',
             '    """\n',
             '    return a[0]\n',
         ])
@@ -248,4 +248,19 @@ class TestIntegrationWriting(unittest.TestCase):
             'def b_method(callable_parameter):\n',
             '    """:rtype: int"""\n',
             '    return callable_parameter(1)\n',
+        ])
+
+    def test_dict(self):
+        full_file = self.in_sample_path('dict', 'dict.py')
+        typing_debugger = self.typer_mock([full_file], sample_findings.dict_finding(full_file))
+
+        docstring_writer.DocstringWriter(typing_debugger).write_all()
+
+        self.written.assert_called_once_with(full_file, [
+            'def some_method(a):\n',
+            '    """\n',
+            '    :type a: dict of (int, str)\n',
+            '    :rtype: dict of (int, str)\n',
+            '    """\n',
+            '    return a'
         ])
