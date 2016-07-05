@@ -107,16 +107,20 @@ class TypeWrapper(object):
             not isinstance(parameter, collections.Mapping)
         ])
 
+    def _full_name(self, a_type):
+        return a_type.__module__ + '.' + a_type.__name__
+
     def __eq__(self, other):
         if not isinstance(other, TypeWrapper):
             return False
         return self.type == other.type and self.contained_types == other.contained_types and self.mapped_types == other.mapped_types
 
     def __hash__(self):
-        return hash(tuple([self.type] + sorted(list(self.contained_types))))
+        return hash(tuple([self.type] + sorted([self._full_name(a_type) for a_type in self.contained_types]) + sorted(
+            [(self._full_name(a_type), self._full_name(b_type)) for a_type, b_type in self.mapped_types])))
 
     def __repr__(self):
-        return 'TypeWrapper({}, {})'.format(self.type, self.contained_types)
+        return 'TypeWrapper({}, {}, {})'.format(self.type, self.contained_types, self.mapped_types)
 
     def __bool__(self):
         return bool(self.type)
@@ -211,11 +215,13 @@ class FrameWrapper(object):
 
     @property
     def variable_names(self):
-        return tuple([name for name in (get_variable_names(self.frame)) if name not in self.excluded_parameter_names])
+        return tuple(
+            [name for name in (get_variable_names(self.frame)) if name not in self.excluded_parameter_names])
 
     @property
     def must_be_stored(self):
-        return any((self.file_name.startswith(included_directory) for included_directory in self.included_directories))
+        return any(
+            (self.file_name.startswith(included_directory) for included_directory in self.included_directories))
 
     @property
     def call_types(self):
