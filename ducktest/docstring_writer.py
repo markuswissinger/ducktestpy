@@ -105,11 +105,11 @@ class DocstringWriter(object):
 
     @staticmethod
     def _unique_type_names(type_wrappers):
-        the_types=[]
+        the_types = set()
         for wrapper in type_wrappers:
-            for some in DocstringTypeWrapper(wrapper).contained():
-                the_types.append(some)
-        return ' or '.join(set(the_types))
+            for some_type in DocstringTypeWrapper(wrapper).contained():
+                the_types.add(some_type)
+        return ' or '.join(sorted(list(the_types)))
 
     def _modified_docstring(self, finding, indent):
         new_lines = []
@@ -143,7 +143,8 @@ class DocstringTypeWrapper(object):
     def contained(self):
         full_name = self._full_name(self.type_wrapper.type)
         if self.type_wrapper.contained_types:
-            return [full_name + ' of ' + self._full_name(contained) for contained in self.type_wrapper.contained_types if
+            return [full_name + ' of ' + self._full_name(contained) for contained in self.type_wrapper.contained_types
+                    if
                     contained]
         return [full_name]
 
