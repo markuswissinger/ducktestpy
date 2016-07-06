@@ -16,8 +16,6 @@ limitations under the License.
 
 import tokenize
 
-from future.utils import iteritems
-
 
 class WrappedIterator(object):
     """python3 compatibility"""
@@ -140,7 +138,10 @@ class DocstringTypeWrapper(object):
         return name + '.'
 
     def _full_name(self, a_type):
-        return self._module_name(a_type) + a_type.__name__
+        try:
+            return self._module_name(a_type) + a_type.__name__
+        except AttributeError:
+            return ''
 
     def contained(self):
         full_name = self._full_name(self.type_wrapper.type)

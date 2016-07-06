@@ -107,8 +107,12 @@ class TypeWrapper(object):
             not isinstance(parameter, collections.Mapping)
         ])
 
-    def _full_name(self, a_type):
-        return a_type.__module__ + '.' + a_type.__name__
+    @staticmethod
+    def _full_name(a_type):
+        try:
+            return a_type.__module__ + '.' + a_type.__name__
+        except AttributeError:
+            return
 
     def __eq__(self, other):
         if not isinstance(other, TypeWrapper):
