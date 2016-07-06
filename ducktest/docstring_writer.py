@@ -149,7 +149,7 @@ class DocstringTypeWrapper(object):
             return [full_name + ' of ' + self._full_name(contained) for contained in self.type_wrapper.contained_types
                     if
                     contained] + [full_name + ' of ({}, {})'.format(self._full_name(key), self._full_name(value)) for
-                                  key, value in self.type_wrapper.mapped_types]
+                                  key, value in self.type_wrapper.mapped_types if (key and value)]
 
         return [full_name]
 
