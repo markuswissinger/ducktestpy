@@ -14,11 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import bdb
 import collections
 import types
 import unittest
-from bdb import Bdb
 from collections import defaultdict
 import sys
 
@@ -285,39 +283,6 @@ class Tracer(object):
 
     def get_sorted_findings(self, file_name):
         return sorted(self.findings[file_name].values(), reverse=True)
-
-
-class TypingDebugger(bdb.Bdb):
-    def __init__(self, frame_factory):
-        Bdb.__init__(self)
-        self.frame_factory = frame_factory
-        self.findings = defaultdict(defaultdict_of_finding)
-
-    def user_call(self, frame, argument_list):
-        wrapped_frame = self.frame_factory.create(frame)
-        if wrapped_frame.must_be_stored and wrapped_frame.call_types:
-            self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame)
-
-    def user_return(self, frame, return_value):
-        wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
-        if wrapped_frame.must_be_stored and wrapped_frame.return_type:
-            self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame)
-
-    def all_file_names(self):
-        return sorted(self.findings.keys())
-
-    def get_sorted_findings(self, file_name):
-        return sorted(self.findings[file_name].values(), reverse=True)
-
-    # def do_clear(self, arg):
-    #    """there are no breakpoints in current implementation"""
-    #    pass
-
-    def dispatch_line(self, frame):
-        return self.trace_dispatch
-
-    def break_anywhere(self, frame):
-        return False
 
 
 def run(conf):
