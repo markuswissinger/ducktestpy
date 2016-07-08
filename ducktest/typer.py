@@ -263,7 +263,8 @@ def defaultdict_of_finding():
 
 
 class Tracer(object):
-    def __init__(self, frame_factory):
+    def __init__(self, frame_factory, top_level_dir):
+        self.top_level_dir = top_level_dir
         self.frame_factory = frame_factory
         self.findings = defaultdict(defaultdict_of_finding)
 
@@ -279,13 +280,14 @@ class Tracer(object):
             self.on_return(frame, arg)
 
     def on_call(self, frame):
-        wrapped_frame = self.frame_factory.create(frame)
-        if wrapped_frame.must_be_stored:
-            call_types = wrapped_frame.call_types
-            if call_types:
-                self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame,
-                                                                                                 call_types)
-                pass
+        if get_file_name(frame).startswith(self.top_level_dir):
+            wrapped_frame = self.frame_factory.create(frame)
+            if wrapped_frame.must_be_stored:
+                call_types = wrapped_frame.call_types
+                if call_types:
+                    self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame,
+                                                                                                     call_types)
+                    pass
 
     def on_return(self, frame, return_value):
         wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
@@ -305,7 +307,7 @@ class Tracer(object):
 
 def run(conf):
     factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
-    tracer = Tracer(factory)
+    tracer = Tracer(factory, conf.top_level_directory)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner()
     for test_directory in conf.discover_tests_in_directories:
