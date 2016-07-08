@@ -3,4 +3,6 @@ class SomeClass(object):
         self.b = b
 
     def some_method(self, a):
+        A = (1, 2)
+        B, C = A
         return self.b + a

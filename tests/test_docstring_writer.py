@@ -17,6 +17,7 @@ import os
 import unittest
 
 from hamcrest import assert_that, is_
+
 from mock import Mock
 
 from ducktest import docstring_writer
@@ -141,6 +142,8 @@ class TestIntegrationWriting(unittest.TestCase):
             '        :type a: int\n',
             '        :rtype: int\n',
             '        """\n',
+            '        A = (1, 2)\n',
+            '        B, C = A\n',
             '        return self.b + a\n',
         ])
 
