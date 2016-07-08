@@ -35,4 +35,5 @@ def main():
 
     typing_debugger = run(configuration)
 
-    DocstringWriter(typing_debugger).write_all()
+    if typing_debugger:
+        DocstringWriter(typing_debugger).write_all()
