@@ -21,7 +21,6 @@ Therefore, manually writing :type and :rtype tags into method docstrings seems t
 ducktest solves that problem by collecting type information from unit tests.
 It executes unit tests and collects the types of *method parameters* and *return values* of
 methods called in the process.
-It also collects the spec classes of mock.Mock objects that are passed into or returned from methods.
 Then ducktest writes that information into the :type and :rtype tags of the corresponding method docstrings.
 
 
@@ -81,9 +80,7 @@ non-builtin objects the full reference is written::
         pass
 
     def do_something(a_parameter):
-        """
-        :type a_parameter: some.full.reference.SomeClass
-        """
+        """:type a_parameter: some.full.reference.SomeClass"""
         pass
 
 
@@ -136,6 +133,29 @@ calling ducktest writes the type as well as contained types::
         return a_parameter[key]
 
 
+generators
+----------
+
+Consider some generator::
+
+    def some_generator():
+        yield 1
+
+and some test::
+
+    class TestSome(unittest.TestCase):
+        def test_some_generator(self):
+            for stuff in some_generator():
+                assert stuff==1
+
+Calling ducktest results in a generator rtype tag, the sphinx docstring format does not seem to define a *yield_type*
+tag, so ducktest currently does not write one::
+
+    def some_generator():
+        """:rtype: generator"""
+        yield 1
+
+
 installation
 ============
 
@@ -146,11 +166,6 @@ Install ducktest via pip::
 
 usage
 =====
-
-First run your tests - then run ducktest - then run your tests again.
-First test run is necessary because ducktests does not yet check if your tests pass.
-Last test run is useful since ducktest still might break something.
-
 
 configuration file
 ------------------
@@ -217,11 +232,12 @@ An unescaped newline in a docstring will break the code after a ducktest run. So
 etc.
 
 
-Behaviours / TODO
-=================
 
 notable (intended) behaviour
-----------------------------
+============================
+
+-   ducktest uses the failfast option of unittest. ducktest does not write type information if any of the executed tests
+    failed.
 
 -   ducktest deletes *all* :type and :rtype tags in docstrings it touches before writing. So a failed renaming does not
     result in a broken docstring. Type tags from other sources (e.g. the developer) will be lost. Just do never write
@@ -229,13 +245,12 @@ notable (intended) behaviour
 
 -   ducktest does not write tags for NoneType or a plain mock.Mock (without _spec_class)
 
+
 TODO
-----
+====
 
 - Old style classes are not resolved yet
 - ducktest collects all types used in tests, even if they are sub- or supertypes of each other
-- Currently failing tests contribute type information, although it is potentially incorrect. Execute ducktest only
-  while all tests pass.
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
   create warnings in static type checkers. There seems to be no way to express this correctly in the sphinx docstring
   format
