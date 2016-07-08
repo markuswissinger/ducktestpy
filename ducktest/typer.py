@@ -290,13 +290,14 @@ class Tracer(object):
                     pass
 
     def on_return(self, frame, return_value):
-        wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
-        if wrapped_frame.must_be_stored:
-            return_type = wrapped_frame.return_type
-            if return_type:
-                self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame,
-                                                                                                   return_type)
-                pass
+        if get_file_name(frame).startswith(self.top_level_dir):
+            wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
+            if wrapped_frame.must_be_stored:
+                return_type = wrapped_frame.return_type
+                if return_type:
+                    self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame,
+                                                                                                       return_type)
+                    pass
 
     def all_file_names(self):
         return sorted(self.findings.keys())
