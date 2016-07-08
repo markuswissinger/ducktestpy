@@ -330,11 +330,10 @@ class DuckResult(unittest.runner.TextTestResult):
 def run(conf):
     factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
     tracer = Tracer(factory, conf.top_level_directory)
-    result = DuckResult(None, None, None)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner(failfast=True, resultclass=DuckResult)
     for test_directory in conf.discover_tests_in_directories:
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         tracer.runcall(runner.run, suite)
-    if result.overall_success:
+    if DuckResult.overall_success:
         return tracer
