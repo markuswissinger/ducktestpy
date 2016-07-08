@@ -232,6 +232,18 @@ An unescaped newline in a docstring will break the code after a ducktest run. So
 etc.
 
 
+settrace
+--------
+
+ducktest uses *sys.settrace*, therefore it can not be used on parts of your code that call *sys.settrace*
+(and is itself not easily accessible by debuggers and such). It also can not evaluate python code that runs in
+separate threads.
+
+However, this is not a strong limitation since ducktest is supposed to execute unit tests. Unit tests really should not
+call *sys.settrace* or do multi-threading.
+
+
+
 
 notable (intended) behaviour
 ============================
