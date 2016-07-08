@@ -273,31 +273,28 @@ class Tracer(object):
         method(*args, **kwargs)
 
     def trace_dispatch(self, frame, event, arg):
-        if event == 'call':
-            self.on_call(frame)
-            return self.trace_dispatch
-        if event == 'return':
-            self.on_return(frame, arg)
+        if get_file_name(frame).startswith(self.top_level_dir):
+            if event == 'call':
+                self.on_call(frame)
+                return self.trace_dispatch
+            if event == 'return':
+                self.on_return(frame, arg)
 
     def on_call(self, frame):
-        if get_file_name(frame).startswith(self.top_level_dir):
-            wrapped_frame = self.frame_factory.create(frame)
-            if wrapped_frame.must_be_stored:
-                call_types = wrapped_frame.call_types
-                if call_types:
-                    self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame,
-                                                                                                     call_types)
-                    pass
+        wrapped_frame = self.frame_factory.create(frame)
+        if wrapped_frame.must_be_stored:
+            call_types = wrapped_frame.call_types
+            if call_types:
+                self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame,
+                                                                                                 call_types)
 
     def on_return(self, frame, return_value):
-        if get_file_name(frame).startswith(self.top_level_dir):
-            wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
-            if wrapped_frame.must_be_stored:
-                return_type = wrapped_frame.return_type
-                if return_type:
-                    self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame,
-                                                                                                       return_type)
-                    pass
+        wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
+        if wrapped_frame.must_be_stored:
+            return_type = wrapped_frame.return_type
+            if return_type:
+                self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame,
+                                                                                                   return_type)
 
     def all_file_names(self):
         return sorted(self.findings.keys())
