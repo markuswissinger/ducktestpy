@@ -139,16 +139,15 @@ class Finding(object):
         self.docstring = None
         self.variable_names = ()
 
-    def add_call(self, frame):
+    def add_call(self, frame, call_types):
         self.__store_constants(frame)
-        types = frame.call_types
-        for key, value in iteritems(types):
+        for key, value in iteritems(call_types):
             self.call_types[key].add(value)
-        self.variable_names = tuple([name for name in frame.variable_names if name in types])
+        self.variable_names = tuple([name for name in frame.variable_names if name in call_types])
 
-    def add_return(self, frame):
+    def add_return(self, frame, return_type):
         self.__store_constants(frame)
-        self.return_types.add(frame.return_type)
+        self.return_types.add(return_type)
 
     def call_parameters(self):
         for name in self.variable_names:
@@ -211,10 +210,21 @@ class FrameWrapper(object):
         self.excluded_parameter_names = excluded_parameter_names
         self.return_value = return_value
 
-        self.file_name = get_file_name(frame)
-        self.function_name = get_function_name(frame)
-        self.first_line_number = get_first_line_number(frame)
-        self.docstring = get_docstring(frame)
+    @property
+    def file_name(self):
+        return get_file_name(self.frame)
+
+    @property
+    def function_name(self):
+        return get_function_name(self.frame)
+
+    @property
+    def first_line_number(self):
+        return get_first_line_number(self.frame)
+
+    @property
+    def docstring(self):
+        return get_docstring(self.frame)
 
     @property
     def variable_names(self):
@@ -265,18 +275,26 @@ class Tracer(object):
         if event == 'call':
             self.on_call(frame)
             return self.trace_dispatch
-        elif event == 'return':
+        if event == 'return':
             self.on_return(frame, arg)
 
     def on_call(self, frame):
         wrapped_frame = self.frame_factory.create(frame)
-        if wrapped_frame.must_be_stored and wrapped_frame.call_types:
-            self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame)
+        if wrapped_frame.must_be_stored:
+            call_types = wrapped_frame.call_types
+            if call_types:
+                self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_call(wrapped_frame,
+                                                                                                 call_types)
+                pass
 
     def on_return(self, frame, return_value):
         wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
-        if wrapped_frame.must_be_stored and wrapped_frame.return_type:
-            self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame)
+        if wrapped_frame.must_be_stored:
+            return_type = wrapped_frame.return_type
+            if return_type:
+                self.findings[wrapped_frame.file_name][wrapped_frame.first_line_number].add_return(wrapped_frame,
+                                                                                                   return_type)
+                pass
 
     def all_file_names(self):
         return sorted(self.findings.keys())
@@ -287,10 +305,10 @@ class Tracer(object):
 
 def run(conf):
     factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
-    debugger = Tracer(factory)  # TypingDebugger(factory)
+    tracer = Tracer(factory)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner()
     for test_directory in conf.discover_tests_in_directories:
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
-        debugger.runcall(runner.run, suite)
-    return debugger
+        tracer.runcall(runner.run, suite)
+    return tracer
