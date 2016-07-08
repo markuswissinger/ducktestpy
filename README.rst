@@ -1,7 +1,7 @@
 ducktest
 ========
 
-Python source code can have type hints.
+Python source code can be augmented by type hints.
 These are useful for the human reader as well as static code analysers.
 ducktest is a command line tool to generate such type hints.
 
@@ -13,5 +13,5 @@ Therefore, manually writing :type and :rtype tags into method docstrings seems t
 ducktest solves that problem by collecting type information from unit tests.
 It executes unit tests and collects the types of *method parameters* and *return values* of
 methods called in the process.
-It also collects the spec classes of mock.Mock objects that are passed into or returned from methods.
 Then ducktest writes that information into the :type and :rtype tags of the corresponding method docstrings.
+
