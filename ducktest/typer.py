@@ -303,7 +303,7 @@ class Tracer(object):
         return sorted(self.findings[file_name].values(), reverse=True)
 
 
-class DuckResult(unittest.runner.TextTestResult):
+class DuckTestResult(unittest.runner.TextTestResult):
     overall_success = True
 
     @classmethod
@@ -312,28 +312,28 @@ class DuckResult(unittest.runner.TextTestResult):
 
     def addError(self, test, err):
         self.remember_failure()
-        super(DuckResult, self).addError(test, err)
+        super(DuckTestResult, self).addError(test, err)
 
     def addFailure(self, test, err):
         self.remember_failure()
-        super(DuckResult, self).addFailure(test, err)
+        super(DuckTestResult, self).addFailure(test, err)
 
     def addExpectedFailure(self, test, err):
         self.remember_failure()
-        super(DuckResult, self).addExpectedFailure(test, err)
+        super(DuckTestResult, self).addExpectedFailure(test, err)
 
     def addUnexpectedSuccess(self, test):
         self.remember_failure()
-        super(DuckResult, self).addUnexpectedSuccess(test)
+        super(DuckTestResult, self).addUnexpectedSuccess(test)
 
 
 def run(conf):
     factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
     tracer = Tracer(factory, conf.top_level_directory)
     loader = unittest.TestLoader()
-    runner = unittest.TextTestRunner(failfast=True, resultclass=DuckResult)
+    runner = unittest.TextTestRunner(failfast=True, resultclass=DuckTestResult)
     for test_directory in conf.discover_tests_in_directories:
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         tracer.runcall(runner.run, suite)
-    if DuckResult.overall_success:
+    if DuckTestResult.overall_success:
         return tracer
