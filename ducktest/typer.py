@@ -25,6 +25,8 @@ from future.utils import iteritems
 from mock import Mock
 from past.builtins import basestring
 
+from ducktest.another_typer import FrameProcessors
+
 CO_GENERATOR = 0x20
 
 
@@ -214,7 +216,9 @@ def defaultdict_of_finding():
 
 
 class Tracer(object):
-    def __init__(self, frame_factory, top_level_dir):
+    def __init__(self, frame_factory, top_level_dir, call_frame_processor, return_frame_processor):
+        self.return_frame_processor = return_frame_processor
+        self.call_frame_processor = call_frame_processor
         self.top_level_dir = top_level_dir
         self.frame_factory = frame_factory
         self.findings = defaultdict(defaultdict_of_finding)
@@ -232,6 +236,7 @@ class Tracer(object):
                 self.on_return(frame, arg)
 
     def on_call(self, frame):
+        self.call_frame_processor.process(frame)
         wrapped_frame = self.frame_factory.create(frame)
         if wrapped_frame.must_be_stored:
             call_types = wrapped_frame.call_types
@@ -240,6 +245,7 @@ class Tracer(object):
                                                                                                  call_types)
 
     def on_return(self, frame, return_value):
+        self.return_frame_processor.process(frame, return_value)
         wrapped_frame = self.frame_factory.create(frame, return_value=return_value)
         if wrapped_frame.must_be_stored:
             return_type = wrapped_frame.return_type
@@ -282,7 +288,9 @@ class DuckTestResult(unittest.runner.TextTestResult):
 
 def run(conf):
     factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
-    tracer = Tracer(factory, conf.top_level_directory)
+    processors = FrameProcessors(conf)
+    tracer = Tracer(factory, conf.top_level_directory, processors.call_frame_processor,
+                    processors.return_frame_processor)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner(failfast=True, resultclass=DuckTestResult)
     for test_directory in conf.discover_tests_in_directories:
