@@ -140,13 +140,13 @@ class Finding(object):
         self.variable_names = ()
 
     def add_call(self, frame, call_types):
-        self.__store_constants(frame)
+        self.docstring = frame.docstring
         for key, value in iteritems(call_types):
             self.call_types[key].add(value)
         self.variable_names = tuple([name for name in frame.variable_names if name in call_types])
 
     def add_return(self, frame, return_type):
-        self.__store_constants(frame)
+        self.docstring = frame.docstring
         self.return_types.add(return_type)
 
     def call_parameters(self):
@@ -154,37 +154,18 @@ class Finding(object):
             if self.call_types[name]:
                 yield name, self.call_types[name]
 
-    def __store_constants(self, frame):
-        if self.file_name:
-            return
-        self.file_name = frame.file_name
-        self.function_name = frame.function_name
-        self.first_line_number = frame.first_line_number
-        self.docstring = frame.docstring
-
-    def __gt__(self, other):
-        """:type other: Finding"""
-        return self.file_name > other.file_name or (self.file_name == other.file_name and
-                                                    self.first_line_number > other.first_line_number)
-
     def __eq__(self, other):
         if not isinstance(other, Finding):
             return False
         return all([
             self.call_types == other.call_types,
             self.return_types == other.return_types,
-            self.file_name == other.file_name,
-            self.function_name == other.function_name,
-            self.first_line_number == other.first_line_number,
             self.docstring == other.docstring,
             self.variable_names == other.variable_names
         ])
 
     def __repr__(self):
         return ', '.join([
-            self.file_name,
-            self.function_name,
-            str(self.first_line_number),
             str(self.variable_names),
             str(self.call_types),
             str(self.return_types),
@@ -300,7 +281,9 @@ class Tracer(object):
         return sorted(self.findings.keys())
 
     def get_sorted_findings(self, file_name):
-        return sorted(self.findings[file_name].values(), reverse=True)
+        findings_in_file = self.findings[file_name]
+        line_numbers = sorted(findings_in_file.keys(), reverse=True)
+        return [findings_in_file[line_number] for line_number in line_numbers]
 
 
 class DuckTestResult(unittest.runner.TextTestResult):
