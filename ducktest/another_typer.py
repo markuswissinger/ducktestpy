@@ -113,6 +113,16 @@ class TypeWrapper(object):
         return TypeWrapper(type(value))
 
 
+def get_plain_type(parameter):
+    if isinstance(parameter, mock.Mock):
+        if parameter._spec_class:
+            return parameter._spec_class
+        else:
+            raise ValueError
+    else:
+        return type(parameter)
+
+
 class MappingTypeWrapper(TypeWrapper):
     def __init__(self, own_type, mapped_types):
         super(MappingTypeWrapper, self).__init__(own_type)
@@ -120,7 +130,17 @@ class MappingTypeWrapper(TypeWrapper):
 
     @staticmethod
     def from_value(mapping):
-        return MappingTypeWrapper(type(mapping), {(type(key), type(value)) for key, value in iteritems(mapping)})
+        return MappingTypeWrapper(type(mapping), MappingTypeWrapper.mapped_types(mapping))
+
+    @staticmethod
+    def mapped_types(mapping):
+        result = set()
+        for key, value in iteritems(mapping):
+            try:
+                result.add((get_plain_type(key), get_plain_type(value)))
+            except ValueError:
+                pass
+        return result
 
 
 class ContainerTypeWrapper(TypeWrapper):
@@ -130,7 +150,17 @@ class ContainerTypeWrapper(TypeWrapper):
 
     @staticmethod
     def from_value(container):
-        return ContainerTypeWrapper(type(container), {type(value) for value in container})
+        return ContainerTypeWrapper(type(container), ContainerTypeWrapper.contained_types(container))
+
+    @staticmethod
+    def contained_types(container):
+        result = set()
+        for value in container:
+            try:
+                result.add(get_plain_type(value))
+            except ValueError:
+                pass
+        return result
 
 
 class GeneratorTypeProcessor(Processor):
