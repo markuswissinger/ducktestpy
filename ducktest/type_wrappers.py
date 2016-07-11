@@ -15,4 +15,4 @@ class ContainerTypeWrapper(TypeWrapper):
         super(ContainerTypeWrapper, self).__init__(own_type)
         self.contained_types = contained_types
 
-    
+
