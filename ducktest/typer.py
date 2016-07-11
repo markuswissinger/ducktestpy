@@ -15,54 +15,83 @@ limitations under the License.
 """
 
 import collections
+import sys
 import types
 import unittest
 from collections import defaultdict
-import sys
 
+from builtins import object
 from future.utils import iteritems
 from mock import Mock
 from past.builtins import basestring
-from builtins import object
 
 CO_GENERATOR = 0x20
-CO_VARARGS = 0x04
-CO_KWARGS = 0x08
-
-
-def has_varargs(frame):
-    return frame.f_code.co_flags & CO_VARARGS != 0
-
-
-def is_generator(frame):
-    return frame.f_code.co_flags & CO_GENERATOR != 0
-
-
-def get_first_line_number(frame):
-    return frame.f_code.co_firstlineno
-
-
-def get_function_name(frame):
-    return frame.f_code.co_name
 
 
 def get_file_name(frame):
+    """The programs spends half of its runtime in this function, therefore it is kept out of the wrapper"""
     return frame.f_code.co_filename
 
 
-def get_variable_names(frame):
-    return frame.f_code.co_varnames
+class FrameWrapper(object):
+    def __init__(self, frame, included_directories, excluded_parameter_names, return_value=None):
+        self.frame = frame
+        self.included_directories = included_directories
+        self.excluded_parameter_names = excluded_parameter_names
+        self.return_value = return_value
 
+    @property
+    def file_name(self):
+        return get_file_name(self.frame)
 
-def get_local_variable(frame, variable_name):
-    return frame.f_locals[variable_name]
+    @property
+    def first_line_number(self):
+        return self.frame.f_code.co_firstlineno
 
+    @property
+    def docstring(self):
+        try:
+            return self.frame.f_code.co_consts[0]
+        except IndexError:
+            return None
 
-def get_docstring(frame):
-    try:
-        return frame.f_code.co_consts[0]
-    except IndexError:
-        return None
+    def _variable_names(self):
+        return self.frame.f_code.co_varnames
+
+    @property
+    def variable_names(self):
+        return tuple([name for name in self._variable_names() if name not in self.excluded_parameter_names])
+
+    @property
+    def must_be_stored(self):
+        return any((self.file_name.startswith(included_directory) for included_directory in self.included_directories))
+
+    def _local_variable(self, variable_name):
+        return self.frame.f_locals[variable_name]
+
+    @property
+    def call_types(self):
+        call_types = {}
+        for variable_name in self.variable_names:
+            try:
+                parameter = self._local_variable(variable_name)
+            except KeyError:
+                continue
+            wrapper = TypeWrapper(parameter)
+            if wrapper:
+                call_types[variable_name] = wrapper
+        return call_types
+
+    def _is_generator(self):
+        return self.frame.f_code.co_flags & CO_GENERATOR != 0
+
+    @property
+    def return_type(self):
+        if self._is_generator():
+            return TypeWrapper(self.return_value, generator=True)
+        if self.return_value is None:
+            return None
+        return TypeWrapper(self.return_value)
 
 
 class TypeWrapper(object):
@@ -106,21 +135,20 @@ class TypeWrapper(object):
             not isinstance(parameter, collections.Mapping)
         ])
 
-    @staticmethod
-    def _full_name(a_type):
-        try:
-            return a_type.__module__ + '.' + a_type.__name__
-        except AttributeError:
-            return
-
     def __eq__(self, other):
-        if not isinstance(other, TypeWrapper):
-            return False
-        return self.type == other.type and self.contained_types == other.contained_types and self.mapped_types == other.mapped_types
+        if isinstance(other, TypeWrapper):
+            return all((
+                self.type == other.type,
+                self.contained_types == other.contained_types,
+                self.mapped_types == other.mapped_types
+            ))
 
     def __hash__(self):
-        return hash(tuple([self.type] + sorted([self._full_name(a_type) for a_type in self.contained_types]) + sorted(
-            [(self._full_name(a_type), self._full_name(b_type)) for a_type, b_type in self.mapped_types])))
+        return hash((
+            self.type,
+            frozenset(self.contained_types),
+            frozenset(self.mapped_types),
+        ))
 
     def __repr__(self):
         return 'TypeWrapper({}, {}, {})'.format(self.type, self.contained_types, self.mapped_types)
@@ -133,20 +161,17 @@ class Finding(object):
     def __init__(self):
         self.call_types = defaultdict(set)
         self.return_types = set()
-        self.file_name = None
-        self.function_name = None
-        self.first_line_number = None
         self.docstring = None
         self.variable_names = ()
 
     def add_call(self, frame, call_types):
-        self.__store_constants(frame)
+        self.docstring = frame.docstring
         for key, value in iteritems(call_types):
             self.call_types[key].add(value)
         self.variable_names = tuple([name for name in frame.variable_names if name in call_types])
 
     def add_return(self, frame, return_type):
-        self.__store_constants(frame)
+        self.docstring = frame.docstring
         self.return_types.add(return_type)
 
     def call_parameters(self):
@@ -154,37 +179,18 @@ class Finding(object):
             if self.call_types[name]:
                 yield name, self.call_types[name]
 
-    def __store_constants(self, frame):
-        if self.file_name:
-            return
-        self.file_name = frame.file_name
-        self.function_name = frame.function_name
-        self.first_line_number = frame.first_line_number
-        self.docstring = frame.docstring
-
-    def __gt__(self, other):
-        """:type other: Finding"""
-        return self.file_name > other.file_name or (self.file_name == other.file_name and
-                                                    self.first_line_number > other.first_line_number)
-
     def __eq__(self, other):
         if not isinstance(other, Finding):
             return False
         return all([
             self.call_types == other.call_types,
             self.return_types == other.return_types,
-            self.file_name == other.file_name,
-            self.function_name == other.function_name,
-            self.first_line_number == other.first_line_number,
             self.docstring == other.docstring,
             self.variable_names == other.variable_names
         ])
 
     def __repr__(self):
         return ', '.join([
-            self.file_name,
-            self.function_name,
-            str(self.first_line_number),
             str(self.variable_names),
             str(self.call_types),
             str(self.return_types),
@@ -201,61 +207,6 @@ class FrameWrapperFactory(object):
                             self.included_directories,
                             self.excluded_parameter_names,
                             return_value=return_value)
-
-
-class FrameWrapper(object):
-    def __init__(self, frame, included_directories, excluded_parameter_names, return_value=None):
-        self.frame = frame
-        self.included_directories = included_directories
-        self.excluded_parameter_names = excluded_parameter_names
-        self.return_value = return_value
-
-    @property
-    def file_name(self):
-        return get_file_name(self.frame)
-
-    @property
-    def function_name(self):
-        return get_function_name(self.frame)
-
-    @property
-    def first_line_number(self):
-        return get_first_line_number(self.frame)
-
-    @property
-    def docstring(self):
-        return get_docstring(self.frame)
-
-    @property
-    def variable_names(self):
-        return tuple(
-            [name for name in (get_variable_names(self.frame)) if name not in self.excluded_parameter_names])
-
-    @property
-    def must_be_stored(self):
-        return any(
-            (self.file_name.startswith(included_directory) for included_directory in self.included_directories))
-
-    @property
-    def call_types(self):
-        call_types = {}
-        for variable_name in self.variable_names:
-            try:
-                parameter = get_local_variable(self.frame, variable_name)
-            except KeyError:
-                continue
-            wrapper = TypeWrapper(parameter)
-            if wrapper:
-                call_types[variable_name] = wrapper
-        return call_types
-
-    @property
-    def return_type(self):
-        if is_generator(self.frame):
-            return TypeWrapper(self.return_value, generator=True)
-        if self.return_value is None:
-            return None
-        return TypeWrapper(self.return_value)
 
 
 def defaultdict_of_finding():
@@ -300,10 +251,12 @@ class Tracer(object):
         return sorted(self.findings.keys())
 
     def get_sorted_findings(self, file_name):
-        return sorted(self.findings[file_name].values(), reverse=True)
+        findings_in_file = self.findings[file_name]
+        line_numbers = sorted(findings_in_file.keys(), reverse=True)
+        return [findings_in_file[line_number] for line_number in line_numbers]
 
 
-class DuckResult(unittest.runner.TextTestResult):
+class DuckTestResult(unittest.runner.TextTestResult):
     overall_success = True
 
     @classmethod
@@ -312,28 +265,28 @@ class DuckResult(unittest.runner.TextTestResult):
 
     def addError(self, test, err):
         self.remember_failure()
-        super(DuckResult, self).addError(test, err)
+        super(DuckTestResult, self).addError(test, err)
 
     def addFailure(self, test, err):
         self.remember_failure()
-        super(DuckResult, self).addFailure(test, err)
+        super(DuckTestResult, self).addFailure(test, err)
 
     def addExpectedFailure(self, test, err):
         self.remember_failure()
-        super(DuckResult, self).addExpectedFailure(test, err)
+        super(DuckTestResult, self).addExpectedFailure(test, err)
 
     def addUnexpectedSuccess(self, test):
         self.remember_failure()
-        super(DuckResult, self).addUnexpectedSuccess(test)
+        super(DuckTestResult, self).addUnexpectedSuccess(test)
 
 
 def run(conf):
     factory = FrameWrapperFactory(conf.write_docstrings_in_directories, conf.ignore_call_parameter_names)
     tracer = Tracer(factory, conf.top_level_directory)
     loader = unittest.TestLoader()
-    runner = unittest.TextTestRunner(failfast=True, resultclass=DuckResult)
+    runner = unittest.TextTestRunner(failfast=True, resultclass=DuckTestResult)
     for test_directory in conf.discover_tests_in_directories:
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         tracer.runcall(runner.run, suite)
-    if DuckResult.overall_success:
+    if DuckTestResult.overall_success:
         return tracer
