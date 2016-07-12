@@ -25,7 +25,7 @@ from future.utils import iteritems
 from mock import Mock
 from past.builtins import basestring
 
-from ducktest.another_typer import FrameProcessors
+from ducktest.type_wrappers import FrameProcessors
 
 CO_GENERATOR = 0x20
 
