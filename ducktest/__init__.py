@@ -33,7 +33,7 @@ def main():
 
     configuration = Configuration.from_file_path(config_file_path)
 
-    typing_debugger = run(configuration)
+    typing_debugger, processors = run(configuration)
 
     if typing_debugger:
         DocstringWriter(typing_debugger).write_all()

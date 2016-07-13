@@ -1,13 +1,16 @@
 import os
 import types
 import unittest
+from collections import OrderedDict
 
 from hamcrest import assert_that, is_
 from mock import Mock
 
 from ducktest import run
+from ducktest.another_typer import FunctionParameters
+from ducktest.type_wrappers import PlainTypeWrapper
 from ducktest.typer import Finding, TypeWrapper
-from tests.sample import sample_findings
+from tests.sample import sample_findings, sample_parameters
 
 
 class TypeWrapperTest(unittest.TestCase):
@@ -48,7 +51,7 @@ class TestTypeCollection(unittest.TestCase):
         conf = ConfigMock('module_method')
         full_file = conf.in_sample_path('module_method.py')
 
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         findings = typing_debugger.get_sorted_findings(full_file)
         sample = sample_findings.module_method(full_file)
@@ -57,10 +60,14 @@ class TestTypeCollection(unittest.TestCase):
         assert_that(findings, is_(sample))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
+        sample = sample_parameters.module_method
+        assert_that(processors.call_types.sorted_call_types(full_file), is_(sample.call))
+        assert_that(processors.return_types.sorted_return_types(full_file), is_(sample.ret))
+
     def test_method_in_class(self):
         conf = ConfigMock('method_in_class')
         full_file = conf.in_sample_path('method_in_class.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.get_sorted_findings(full_file), is_(sample_findings.method_in_class(full_file)))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
@@ -68,7 +75,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_generator(self):
         conf = ConfigMock('generator')
         full_file = conf.in_sample_path('generator.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.get_sorted_findings(full_file), is_(sample_findings.generator(full_file)))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
@@ -76,7 +83,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_classmethod(self):
         conf = ConfigMock('classmethod')
         full_file = conf.in_sample_path('classmethod.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -86,7 +93,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_list(self):
         conf = ConfigMock('list')
         full_file = conf.in_sample_path('list.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -96,7 +103,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_imported_types(self):
         conf = ConfigMock('imported_types')
         full_file = conf.in_sample_path('imported_types.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -106,7 +113,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_several_calls(self):
         conf = ConfigMock('several_calls')
         full_file = conf.in_sample_path('several_calls.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -116,7 +123,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_autospec_call(self):
         conf = ConfigMock('autospec')
         full_file = conf.in_sample_path('autospec.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -126,7 +133,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_plain_mock(self):
         conf = ConfigMock('plain_mock')
         full_file = conf.in_sample_path('plain_mock.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -136,7 +143,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_none_type(self):
         conf = ConfigMock('none')
         full_file = conf.in_sample_path('none.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -146,7 +153,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_function(self):
         conf = ConfigMock('function')
         full_file = conf.in_sample_path('function.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
@@ -156,7 +163,7 @@ class TestTypeCollection(unittest.TestCase):
     def test_dict(self):
         conf = ConfigMock('dict')
         full_file = conf.in_sample_path('dict.py')
-        typing_debugger = run(conf)
+        typing_debugger, processors = run(conf)
 
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 

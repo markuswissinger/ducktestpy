@@ -297,4 +297,4 @@ def run(conf):
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         tracer.runcall(runner.run, suite)
     if DuckTestResult.overall_success:
-        return tracer
+        return tracer, processors

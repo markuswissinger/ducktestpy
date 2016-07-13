@@ -1,6 +1,6 @@
 import types
 from abc import abstractmethod, ABCMeta
-from collections import defaultdict, OrderedDict, Mapping, Container, Iterable
+from collections import defaultdict, OrderedDict, Mapping, Container, Iterable, namedtuple
 
 import mock
 from future.utils import iteritems
@@ -227,6 +227,9 @@ class PlainTypeProcessor(Processor):
         self.type_repository.store(TypeWrapper.from_value(value), *args)
 
 
+FunctionParameters = namedtuple('FunctionParameters', ['line_number', 'types'])
+
+
 class CallTypesRepository(object):
     def __init__(self):
         self._dict = defaultdict(lambda: defaultdict(lambda: (defaultdict(lambda: set()), [])))
@@ -250,7 +253,8 @@ class CallTypesRepository(object):
     def sorted_call_types(self, file_name):
         findings_in_file = self._dict[file_name]
         line_numbers = sorted(findings_in_file.keys(), reverse=True)
-        return [self._sorted_per_line(*findings_in_file[line_number]) for line_number in line_numbers]
+        return [FunctionParameters(line_number, self._sorted_per_line(*findings_in_file[line_number])) for line_number
+                in line_numbers]
 
 
 class ReturnTypesRepository(object):
@@ -266,7 +270,7 @@ class ReturnTypesRepository(object):
     def sorted_return_types(self, file_name):
         findings_in_file = self._dict[file_name]
         line_numbers = sorted(findings_in_file.keys(), reverse=True)
-        return [findings_in_file[line_number] for line_number in line_numbers]
+        return [FunctionParameters(line_number, findings_in_file[line_number]) for line_number in line_numbers]
 
 
 class FrameProcessors(object):
