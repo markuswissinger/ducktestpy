@@ -28,9 +28,9 @@ class ConditionalTypeProcessor(Processor):
     def process(self, *args, **kwargs):
         if self._condition(*args, **kwargs):
             try:
-                return {self._process(*args, **kwargs)}
+                return frozenset([self._process(*args, **kwargs)])
             except ValueError:
-                return set()
+                return frozenset()
         else:
             return self.next_processor.process(*args, **kwargs)
 
@@ -60,7 +60,7 @@ class MappingTypeProcessor(ConditionalTypeProcessor):
             except ValueError:
                 pass
         if mapped_types:
-            return MappingTypeWrapper(own_type, mapped_types)
+            return MappingTypeWrapper(own_type, frozenset(mapped_types))
         return PlainTypeWrapper(own_type)
 
 
@@ -82,18 +82,21 @@ class ContainerTypeProcessor(ConditionalTypeProcessor):
         contained_types = set()
         for contained in container:
             try:
-                contained_types.add(self._get_type(contained))
+                contained_types.update(self._get_type(contained))
             except ValueError:
                 continue
         if contained_types:
-            return ContainerTypeWrapper(own_type, contained_types)
+            return ContainerTypeWrapper(own_type, frozenset(contained_types))
         return PlainTypeWrapper(own_type)
 
 
 class PlainTypeProcessor(Processor):
     def process(self, value):
         """implicit end of chain"""
-        return {PlainTypeWrapper(get_plain_type(value))}
+        try:
+            return frozenset({PlainTypeWrapper(get_plain_type(value))})
+        except ValueError:
+            return frozenset()
 
 
 class IdleProcessor(Processor):
