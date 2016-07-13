@@ -25,7 +25,16 @@ class TestTyperChain(unittest.TestCase):
         assert_that(self.get_type([1]), is_({ContainerTypeWrapper(type([]), frozenset([PlainTypeWrapper(type(1))]))}))
 
     def test_dict(self):
-        expected = {MappingTypeWrapper(type({1: 2}),
+        expected = {MappingTypeWrapper(type({1: '2'}),
                                        frozenset([(frozenset([PlainTypeWrapper(type(1))]),
-                                                   frozenset([PlainTypeWrapper(type(2))]))]))}
-        assert_that(self.get_type({1: 2}), is_(expected))
+                                                   frozenset([PlainTypeWrapper(type('2'))]))]))}
+        assert_that(self.get_type({1: '2'}), is_(expected))
+
+    def test_list_of_list(self):
+        assert_that(self.get_type([[1]]), is_({ContainerTypeWrapper(type([]), frozenset(
+            [ContainerTypeWrapper(type([]), frozenset([PlainTypeWrapper(type(1))]))]))}))
+
+    def test_dict_of_dict(self):
+        assert_that(self.get_type({1: {'2': u'3'}}), is_(frozenset([MappingTypeWrapper(type({}), frozenset([(frozenset(
+            [PlainTypeWrapper(type(1))]), frozenset([MappingTypeWrapper(type({}), frozenset(
+            [(frozenset([PlainTypeWrapper(type('2'))]), frozenset([PlainTypeWrapper(type(u''))]))]))]))]))])))
