@@ -3,6 +3,7 @@ from collections import namedtuple, Container, Iterable, Mapping
 
 import mock
 from future.utils import iteritems
+from past.builtins import basestring
 
 from ducktest.another_typer import Processor, CallTypesRepository, ReturnTypesRepository, chain, DirectoriesValidater, \
     CallVariableSplitter, NameValidater, ReturnVariableSplitter, get_file_name, get_first_line_number
