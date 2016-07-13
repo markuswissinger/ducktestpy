@@ -14,9 +14,9 @@ MappingTypeWrapper = namedtuple('MappingTypeWrapper', ['own_type', 'mapped_types
 
 def get_plain_type(parameter):
     if isinstance(parameter, mock.Mock):
-        try:
+        if parameter._spec_class:
             return parameter._spec_class
-        except AttributeError:
+        else:
             raise ValueError('Mock without _spec_class used')
     else:
         return type(parameter)
@@ -28,11 +28,11 @@ class ConditionalTypeProcessor(Processor):
     def process(self, *args, **kwargs):
         if self._condition(*args, **kwargs):
             try:
-                return frozenset({self._process(*args, **kwargs)})
+                return {self._process(*args, **kwargs)}
             except ValueError:
                 return set()
         else:
-            self.next_processor.process(*args, **kwargs)
+            return self.next_processor.process(*args, **kwargs)
 
     @abstractmethod
     def _condition(self, *args, **kwargs):
@@ -52,13 +52,16 @@ class MappingTypeProcessor(ConditionalTypeProcessor):
         return isinstance(mapping, Mapping)
 
     def _process(self, mapping):
+        own_type = get_plain_type(mapping)
         mapped_types = set()
         for key, value in iteritems(mapping):
             try:
                 mapped_types.add((self._get_type(key), self._get_type(value)))
             except ValueError:
                 pass
-        return MappingTypeWrapper(get_plain_type(mapping), mapped_types)
+        if mapped_types:
+            return MappingTypeWrapper(own_type, mapped_types)
+        return PlainTypeWrapper(own_type)
 
 
 class ContainerTypeProcessor(ConditionalTypeProcessor):
@@ -75,13 +78,16 @@ class ContainerTypeProcessor(ConditionalTypeProcessor):
         ])
 
     def _process(self, container):
+        own_type = get_plain_type(container)
         contained_types = set()
         for contained in container:
             try:
                 contained_types.add(self._get_type(contained))
             except ValueError:
                 continue
-        return ContainerTypeWrapper(get_plain_type(container), contained_types)
+        if contained_types:
+            return ContainerTypeWrapper(own_type, contained_types)
+        return PlainTypeWrapper(own_type)
 
 
 class PlainTypeProcessor(Processor):
@@ -92,7 +98,7 @@ class PlainTypeProcessor(Processor):
 
 class IdleProcessor(Processor):
     def process(self, *args, **kwargs):
-        self.next_processor.process(*args, **kwargs)
+        return self.next_processor.process(*args, **kwargs)
 
 
 class CallTypeStorer(Processor):
@@ -105,7 +111,7 @@ class CallTypeStorer(Processor):
         function_dict, parameter_order = self.call_types._dict[get_file_name(frame)][get_first_line_number(frame)]
         if name not in function_dict.keys():
             parameter_order.append(name)
-        function_dict[name] += self.get_type(value)
+        function_dict[name].update(self.get_type(value))
 
 
 class ReturnTypeStorer(Processor):
@@ -114,8 +120,8 @@ class ReturnTypeStorer(Processor):
         self.get_type = processor.process
         self.return_types = return_types
 
-    def process(self, value, name, frame):
-        self.return_types._dict[get_file_name(frame)][get_first_line_number(frame)] += self.get_type(value)
+    def process(self, value, frame):
+        self.return_types._dict[get_file_name(frame)][get_first_line_number(frame)].update(self.get_type(value))
 
 
 class FrameProcessors(object):
@@ -124,11 +130,11 @@ class FrameProcessors(object):
         self.call_types = CallTypesRepository()
         self.return_types = ReturnTypesRepository()
 
-        call_head = IdleProcessor()
+        head = IdleProcessor()
         typer = chain(
-            call_head,
-            MappingTypeProcessor(call_head),
-            ContainerTypeProcessor(call_head),
+            head,
+            MappingTypeProcessor(head),
+            ContainerTypeProcessor(head),
             PlainTypeProcessor()
         )
 
