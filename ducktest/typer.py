@@ -161,17 +161,19 @@ class Finding(object):
     def __init__(self):
         self.call_types = defaultdict(set)
         self.return_types = set()
+        self.file_name = None
+        self.first_line_number = None
         self.docstring = None
         self.variable_names = ()
 
     def add_call(self, frame, call_types):
-        self.docstring = frame.docstring
+        self.__store_constants(frame)
         for key, value in iteritems(call_types):
             self.call_types[key].add(value)
         self.variable_names = tuple([name for name in frame.variable_names if name in call_types])
 
     def add_return(self, frame, return_type):
-        self.docstring = frame.docstring
+        self.__store_constants(frame)
         self.return_types.add(return_type)
 
     def call_parameters(self):
@@ -179,18 +181,34 @@ class Finding(object):
             if self.call_types[name]:
                 yield name, self.call_types[name]
 
+    def __store_constants(self, frame):
+        if self.file_name:
+            return
+        self.file_name = frame.file_name
+        self.first_line_number = frame.first_line_number
+        self.docstring = frame.docstring
+
+    def __gt__(self, other):
+        """:type other: Finding"""
+        return self.file_name > other.file_name or (self.file_name == other.file_name and
+                                                    self.first_line_number > other.first_line_number)
+
     def __eq__(self, other):
         if not isinstance(other, Finding):
             return False
         return all([
             self.call_types == other.call_types,
             self.return_types == other.return_types,
+            self.file_name == other.file_name,
+            self.first_line_number == other.first_line_number,
             self.docstring == other.docstring,
             self.variable_names == other.variable_names
         ])
 
     def __repr__(self):
         return ', '.join([
+            self.file_name,
+            str(self.first_line_number),
             str(self.variable_names),
             str(self.call_types),
             str(self.return_types),
