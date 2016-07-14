@@ -112,10 +112,7 @@ class CallTypeStorer(Processor):
         self.call_types = call_types
 
     def process(self, value, name, frame):
-        function_dict, parameter_order = self.call_types._dict[get_file_name(frame)][get_first_line_number(frame)]
-        if name not in function_dict.keys():
-            parameter_order.append(name)
-        function_dict[name].update(self.get_type(value))
+        self.call_types._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(self.get_type(value))
 
 
 class ReturnTypeStorer(Processor):

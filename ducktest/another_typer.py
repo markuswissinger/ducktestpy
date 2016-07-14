@@ -230,31 +230,40 @@ class PlainTypeProcessor(Processor):
 FunctionParameters = namedtuple('FunctionParameters', ['line_number', 'types'])
 
 
+class OrderedDefaultDict(OrderedDict):
+    def __init__(self, default_factory, *args, **kwds):
+        super(OrderedDefaultDict, self).__init__(*args, **kwds)
+        self.default_factory = default_factory
+
+    def __getitem__(self, key):
+        try:
+            return dict.__getitem__(self, key)
+        except KeyError:
+            value = self.default_factory()
+            self[key] = value
+            return value
+
+
 class CallTypesRepository(object):
     def __init__(self):
-        self._dict = defaultdict(lambda: defaultdict(lambda: (defaultdict(lambda: set()), [])))
+        self._dict = defaultdict(lambda: defaultdict(lambda: (OrderedDefaultDict(set))))
 
     def store(self, a_type, name, frame):
-        function_dict, parameter_order = self._dict[get_file_name(frame)][get_first_line_number(frame)]
-        if name not in function_dict.keys():
-            parameter_order.append(name)
-        function_dict[name].add(a_type)
+        self._dict[get_file_name(frame)][get_first_line_number(frame)][name].add(a_type)
 
     def sorted_file_names(self):
         return sorted(self._dict.keys())
 
-    @staticmethod
-    def _sorted_per_line(function_dict, parameter_order):
-        result = OrderedDict()
-        for parameter_name in parameter_order:
-            result[parameter_name] = function_dict[parameter_name]
-        return result
+    def file_names(self):
+        return self._dict.keys()
+
+    def line_numbers(self, file_name):
+        return self._dict[file_name].keys()
 
     def sorted_call_types(self, file_name):
         findings_in_file = self._dict[file_name]
         line_numbers = sorted(findings_in_file.keys(), reverse=True)
-        return [FunctionParameters(line_number, self._sorted_per_line(*findings_in_file[line_number])) for line_number
-                in line_numbers]
+        return [FunctionParameters(line_number, findings_in_file[line_number]) for line_number in line_numbers]
 
 
 class ReturnTypesRepository(object):
