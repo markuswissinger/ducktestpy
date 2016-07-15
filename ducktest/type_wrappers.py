@@ -1,3 +1,4 @@
+import types
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple, Container, Iterable, Mapping
 
@@ -6,7 +7,7 @@ from future.utils import iteritems
 from past.builtins import basestring
 
 from ducktest.another_typer import Processor, CallTypesRepository, ReturnTypesRepository, chain, DirectoriesValidater, \
-    CallVariableSplitter, NameValidater, ReturnVariableSplitter, get_file_name, get_first_line_number
+    CallVariableSplitter, NameValidater, ReturnVariableSplitter, get_file_name, get_first_line_number, is_generator
 
 PlainTypeWrapper = namedtuple('PlainTypeWrapper', 'own_type')
 ContainerTypeWrapper = namedtuple('ContainerTypeWrapper', ['own_type', 'contained_types'])
@@ -100,6 +101,19 @@ class PlainTypeProcessor(Processor):
             return frozenset()
 
 
+class GeneratorTypeProcessor(Processor):
+    def __init__(self, return_types):
+        super(GeneratorTypeProcessor, self).__init__()
+        self.return_types = return_types
+
+    def process(self, return_value, frame):
+        if is_generator(frame):
+            self.return_types._dict[get_file_name(frame)][get_first_line_number(frame)].update(
+                {PlainTypeWrapper(types.GeneratorType)})
+        else:
+            self.next_processor.process(return_value, frame)
+
+
 class IdleProcessor(Processor):
     def process(self, *args, **kwargs):
         return self.next_processor.process(*args, **kwargs)
@@ -149,5 +163,6 @@ class FrameProcessors(object):
         self.return_frame_processor = chain(
             DirectoriesValidater(configuration.write_docstrings_in_directories),
             ReturnVariableSplitter(),
+            GeneratorTypeProcessor(self.return_types),
             ReturnTypeStorer(self.return_types, typer),
         )

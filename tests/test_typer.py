@@ -72,6 +72,10 @@ class TestTypeCollection(unittest.TestCase):
         assert_that(typing_debugger.get_sorted_findings(full_file), is_(sample_findings.method_in_class(full_file)))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
 
+        sample = sample_parameters.method_in_class
+        assert_that(processors.call_types.sorted_call_types(full_file), is_(sample.call))
+        assert_that(processors.return_types.sorted_return_types(full_file), is_(sample.ret))
+
     def test_generator(self):
         conf = ConfigMock('generator')
         full_file = conf.in_sample_path('generator.py')
@@ -79,6 +83,10 @@ class TestTypeCollection(unittest.TestCase):
 
         assert_that(typing_debugger.get_sorted_findings(full_file), is_(sample_findings.generator(full_file)))
         assert_that(typing_debugger.all_file_names(), is_([full_file]))
+
+        sample = sample_parameters.generator
+        assert_that(processors.call_types.sorted_call_types(full_file), is_(sample.call))
+        assert_that(processors.return_types.sorted_return_types(full_file), is_(sample.ret))
 
     def test_classmethod(self):
         conf = ConfigMock('classmethod')
@@ -90,6 +98,10 @@ class TestTypeCollection(unittest.TestCase):
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.class_method(full_file)))
 
+        sample = sample_parameters.classmethod
+        assert_that(processors.call_types.sorted_call_types(full_file), is_(sample.call))
+        assert_that(processors.return_types.sorted_return_types(full_file), is_(sample.ret))
+
     def test_list(self):
         conf = ConfigMock('list')
         full_file = conf.in_sample_path('list.py')
@@ -99,6 +111,10 @@ class TestTypeCollection(unittest.TestCase):
 
         findings = typing_debugger.get_sorted_findings(full_file)
         assert_that(findings, is_(sample_findings.some_list(full_file)))
+
+        sample = sample_parameters.list
+        assert_that(processors.call_types.sorted_call_types(full_file), is_(sample.call))
+        assert_that(processors.return_types.sorted_return_types(full_file), is_(sample.ret))
 
     def test_imported_types(self):
         conf = ConfigMock('imported_types')
