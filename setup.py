@@ -22,11 +22,14 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+    long_description = str(f.read())
+
+with open(path.join(here, 'VERSION.txt')) as f:
+    version = str(f.read())
 
 setup(
     name='ducktest',
-    version='0.1.5',
+    version=version,
     description='Generate type hints from unit tests',
     long_description=long_description,
     url='https://github.com/markuswissinger/ducktestpy',

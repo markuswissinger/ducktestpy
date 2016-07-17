@@ -22,9 +22,16 @@ from ducktest.docstring_writer import DocstringWriter
 from ducktest.typer import run
 
 
+def version():
+    here = os.path.abspath(os.path.dirname(__file__))
+    project_root = os.path.dirname(here)
+    with open(os.path.join(project_root, 'VERSION.txt')) as f:
+        return f.read()
+
+
 def main():
     """Script entry point"""
-    print('ducktest 0.1.5')
+    print('ducktest {}'.format(version()))
     given_config_file_path = sys.argv[1]
     if os.path.isabs(given_config_file_path):
         config_file_path = given_config_file_path
