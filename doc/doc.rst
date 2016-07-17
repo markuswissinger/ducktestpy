@@ -271,5 +271,5 @@ TODO
     - handle hand-written mocks
     - exclude subfolders from type writing
     - exclude subfolders from test execution
-    - optionally delete all :type and :rtype tags from written files (not just the overwritten ones)
+    - delete all :type and :rtype tags from files (not just the overwritten ones) in the write_to folder
 - write not only docstrings but python stubs as well
