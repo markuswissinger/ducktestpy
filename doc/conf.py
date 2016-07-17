@@ -63,7 +63,7 @@ def get_version():
     here = os.path.abspath(os.path.dirname(__file__))
     project_root = os.path.dirname(here)
     with open(os.path.join(project_root, 'VERSION.txt')) as f:
-        return f.read()
+        return str(f.read())
 
 
 # The short X.Y version.
