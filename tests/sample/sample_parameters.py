@@ -1,8 +1,7 @@
 import types
 from collections import namedtuple, OrderedDict
 
-from ducktest.another_typer import FunctionParameters, OrderedDefaultDict
-from ducktest.type_wrappers import PlainTypeWrapper, ContainerTypeWrapper
+from ducktest.type_wrappers import PlainTypeWrapper, ContainerTypeWrapper, FunctionParameters
 
 SampleParameters = namedtuple('SampleParameters', ['call', 'ret'])
 

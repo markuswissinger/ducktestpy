@@ -1,15 +1,10 @@
 import os
-import types
 import unittest
-from collections import OrderedDict
 
 from hamcrest import assert_that, is_
-from mock import Mock
 
 from ducktest import run
-from ducktest.another_typer import FunctionParameters
-from ducktest.type_wrappers import PlainTypeWrapper
-from ducktest.typer import Finding, TypeWrapper
+from ducktest.typer import TypeWrapper
 from tests.sample import sample_findings, sample_parameters
 
 

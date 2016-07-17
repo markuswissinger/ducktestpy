@@ -1,13 +1,109 @@
 import types
 from abc import abstractmethod, ABCMeta
-from collections import namedtuple, Container, Iterable, Mapping
+from collections import namedtuple, Container, Iterable, Mapping, defaultdict, OrderedDict
 
 import mock
 from future.utils import iteritems
 from past.builtins import basestring
 
-from ducktest.another_typer import Processor, CallTypesRepository, ReturnTypesRepository, chain, DirectoriesValidater, \
-    CallVariableSplitter, NameValidater, ReturnVariableSplitter, get_file_name, get_first_line_number, is_generator
+CO_GENERATOR = 0x20
+CO_VARARGS = 0x04
+CO_KWARGS = 0x08
+
+
+def has_varargs(frame):
+    return frame.f_code.co_flags & CO_VARARGS != 0
+
+
+def is_generator(frame):
+    return frame.f_code.co_flags & CO_GENERATOR != 0
+
+
+def get_first_line_number(frame):
+    return frame.f_code.co_firstlineno
+
+
+def get_function_name(frame):
+    return frame.f_code.co_name
+
+
+def get_file_name(frame):
+    return frame.f_code.co_filename
+
+
+def get_variable_names(frame):
+    return frame.f_code.co_varnames
+
+
+def get_local_variable(frame, variable_name):
+    return frame.f_locals[variable_name]
+
+
+def get_docstring(frame):
+    try:
+        return frame.f_code.co_consts[0]
+    except IndexError:
+        return None
+
+
+class Processor(object):
+    __metaclass__ = ABCMeta
+
+    def __init__(self):
+        self.next_processor = None
+
+    @abstractmethod
+    def process(self, *args, **kwargs):
+        pass
+
+
+def last_after(processor):
+    while processor.next_processor:
+        processor = processor.next_processor
+    return processor
+
+
+def chain(*processors):
+    for first, second in zip(processors[:-1], processors[1:]):
+        last_after(first).next_processor = second
+    return processors[0]
+
+
+class DirectoriesValidater(Processor):
+    def __init__(self, included_directories):
+        super(DirectoriesValidater, self).__init__()
+        self.included_directories = included_directories
+
+    def process(self, frame, *args):
+        for included_directory in self.included_directories:
+            if get_file_name(frame).startswith(included_directory):
+                self.next_processor.process(frame, *args)
+
+
+class CallVariableSplitter(Processor):
+    def process(self, frame):
+        for name in get_variable_names(frame):
+            try:
+                value = get_local_variable(frame, name)
+            except KeyError:
+                continue
+            self.next_processor.process(value, name, frame)
+
+
+class ReturnVariableSplitter(Processor):
+    def process(self, frame, return_value):
+        self.next_processor.process(return_value, frame)
+
+
+class NameValidater(Processor):
+    def __init__(self, excluded_names):
+        super(NameValidater, self).__init__()
+        self.excluded_names = excluded_names
+
+    def process(self, value, name, frame):
+        if name not in self.excluded_names:
+            self.next_processor.process(value, name, frame)
+
 
 PlainTypeWrapper = namedtuple('PlainTypeWrapper', 'own_type')
 ContainerTypeWrapper = namedtuple('ContainerTypeWrapper', ['own_type', 'contained_types'])
@@ -137,6 +233,61 @@ class ReturnTypeStorer(Processor):
 
     def process(self, value, frame):
         self.return_types._dict[get_file_name(frame)][get_first_line_number(frame)].update(self.get_type(value))
+
+
+FunctionParameters = namedtuple('FunctionParameters', ['line_number', 'types'])
+
+
+class OrderedDefaultDict(OrderedDict):
+    def __init__(self, default_factory, *args, **kwds):
+        super(OrderedDefaultDict, self).__init__(*args, **kwds)
+        self.default_factory = default_factory
+
+    def __getitem__(self, key):
+        try:
+            return dict.__getitem__(self, key)
+        except KeyError:
+            value = self.default_factory()
+            self[key] = value
+            return value
+
+
+class CallTypesRepository(object):
+    def __init__(self):
+        self._dict = defaultdict(lambda: defaultdict(lambda: (OrderedDefaultDict(set))))
+
+    def store(self, a_type, name, frame):
+        self._dict[get_file_name(frame)][get_first_line_number(frame)][name].add(a_type)
+
+    def sorted_file_names(self):
+        return sorted(self._dict.keys())
+
+    def file_names(self):
+        return self._dict.keys()
+
+    def line_numbers(self, file_name):
+        return self._dict[file_name].keys()
+
+    def sorted_call_types(self, file_name):
+        findings_in_file = self._dict[file_name]
+        line_numbers = sorted(findings_in_file.keys(), reverse=True)
+        return [FunctionParameters(line_number, findings_in_file[line_number]) for line_number in line_numbers]
+
+
+class ReturnTypesRepository(object):
+    def __init__(self):
+        self._dict = defaultdict(lambda: defaultdict(set))
+
+    def store(self, a_type, frame):
+        self._dict[get_file_name(frame)][get_first_line_number(frame)].add(a_type)
+
+    def sorted_file_names(self):
+        return sorted(self._dict.keys())
+
+    def sorted_return_types(self, file_name):
+        findings_in_file = self._dict[file_name]
+        line_numbers = sorted(findings_in_file.keys(), reverse=True)
+        return [FunctionParameters(line_number, findings_in_file[line_number]) for line_number in line_numbers]
 
 
 class FrameProcessors(object):
