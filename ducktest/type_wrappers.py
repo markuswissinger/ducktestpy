@@ -7,12 +7,6 @@ from future.utils import iteritems
 from past.builtins import basestring
 
 CO_GENERATOR = 0x20
-CO_VARARGS = 0x04
-CO_KWARGS = 0x08
-
-
-def has_varargs(frame):
-    return frame.f_code.co_flags & CO_VARARGS != 0
 
 
 def is_generator(frame):
@@ -37,13 +31,6 @@ def get_variable_names(frame):
 
 def get_local_variable(frame, variable_name):
     return frame.f_locals[variable_name]
-
-
-def get_docstring(frame):
-    try:
-        return frame.f_code.co_consts[0]
-    except IndexError:
-        return None
 
 
 class Processor(object):
@@ -204,8 +191,7 @@ class GeneratorTypeProcessor(Processor):
 
     def process(self, return_value, frame):
         if is_generator(frame):
-            self.return_types._dict[get_file_name(frame)][get_first_line_number(frame)].update(
-                {PlainTypeWrapper(types.GeneratorType)})
+            self.return_types.store({PlainTypeWrapper(types.GeneratorType)}, frame)
         else:
             self.next_processor.process(return_value, frame)
 
@@ -222,7 +208,7 @@ class CallTypeStorer(Processor):
         self.call_types = call_types
 
     def process(self, value, name, frame):
-        self.call_types._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(self.get_type(value))
+        self.call_types.store(self.get_type(value), name, frame)
 
 
 class ReturnTypeStorer(Processor):
@@ -232,7 +218,7 @@ class ReturnTypeStorer(Processor):
         self.return_types = return_types
 
     def process(self, value, frame):
-        self.return_types._dict[get_file_name(frame)][get_first_line_number(frame)].update(self.get_type(value))
+        self.return_types.store(self.get_type(value), frame)
 
 
 FunctionParameters = namedtuple('FunctionParameters', ['line_number', 'types'])
@@ -257,7 +243,7 @@ class CallTypesRepository(object):
         self._dict = defaultdict(lambda: defaultdict(lambda: (OrderedDefaultDict(set))))
 
     def store(self, a_type, name, frame):
-        self._dict[get_file_name(frame)][get_first_line_number(frame)][name].add(a_type)
+        self._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(a_type)
 
     def sorted_file_names(self):
         return sorted(self._dict.keys())
@@ -279,7 +265,7 @@ class ReturnTypesRepository(object):
         self._dict = defaultdict(lambda: defaultdict(set))
 
     def store(self, a_type, frame):
-        self._dict[get_file_name(frame)][get_first_line_number(frame)].add(a_type)
+        self._dict[get_file_name(frame)][get_first_line_number(frame)].update(a_type)
 
     def sorted_file_names(self):
         return sorted(self._dict.keys())
