@@ -9,6 +9,7 @@ class SomeClass(object):
     def b(self):
         pass
 
+    @classmethod
     def c(self):
         """one liner"""
         pass
