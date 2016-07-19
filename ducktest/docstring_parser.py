@@ -62,20 +62,3 @@ def docstring_positions(lines):
 def read_file(file_name):
     with open(file_name) as f:
         return f.readlines()
-
-
-class Config(object):
-    def __init__(self):
-        here = os.path.dirname(os.path.abspath(__file__))
-        self.top_level_directory = os.path.split(here)[0]
-        self.discover_tests_in_directories = [here]
-        self.write_docstrings_in_directories = [here]
-        self.ignore_call_parameter_names = ['self', 'cls']
-
-
-class TestParser(unittest.TestCase):
-    def test_some(self):
-        lines = read_file('parse_example.py')
-        positions = docstring_positions(lines)
-
-        print positions
