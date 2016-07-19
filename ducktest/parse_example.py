@@ -22,3 +22,6 @@ class SomeClass(object):
         """
         three liner
         """
+
+    def f(self):
+        """with newline \n, or at the end \n"""

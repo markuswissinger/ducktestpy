@@ -17,8 +17,6 @@ import os
 import tokenize
 import unittest
 
-from ducktest.type_wrappers import FrameProcessors
-
 
 class WrappedIterator(object):
     """python3 compatibility"""
@@ -31,22 +29,24 @@ class WrappedIterator(object):
 
 
 def docstring_positions(lines):
-    """:returns a dictionary {first_line_number: (write_docstring_to_line_index, docstring_indent)}"""
+    """:returns a dictionary {first_method_line_number:
+    (start_line_index, start_coloumn, end_line_index, end_coloumn, docstring)}"""
     positions = {}
-    docstrings = {}
     state = ''
     prev_token_type = None
     maybe_first_line = None
     first_line = None
     wrapped_iterator = WrappedIterator(lines)
     for token_type, text, (srow, scol), (erow, ecol), l in tokenize.generate_tokens(wrapped_iterator.next_line):
-        print ','.join([str(item) for item in [token_type, text, srow, scol]])
+        # print ','.join([str(item) for item in [token_type, text, srow, scol]])
         if prev_token_type == tokenize.INDENT and state == 'in_function':
-            positions[first_line] = (srow - 1, scol)
             if token_type == tokenize.STRING:
-                docstrings[first_line] = text
-            else:
-                docstrings[first_line] = None
+                docstring = text
+            else:  # no docstring
+                erow = srow
+                ecol = scol
+                docstring = ''
+            positions[first_line] = (srow - 1, scol, erow - 1, ecol, docstring)
             state = 'docstring_position_found'
         if text == '@':
             maybe_first_line = srow
@@ -56,7 +56,7 @@ def docstring_positions(lines):
             first_line = maybe_first_line or srow
             state = 'in_function'
         prev_token_type = token_type
-    return positions, docstrings
+    return positions
 
 
 def read_file(file_name):
@@ -76,7 +76,6 @@ class Config(object):
 class TestParser(unittest.TestCase):
     def test_some(self):
         lines = read_file('parse_example.py')
-        positions, docstrings = docstring_positions(lines)
+        positions = docstring_positions(lines)
 
         print positions
-        print docstrings
