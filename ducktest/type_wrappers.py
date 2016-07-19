@@ -245,11 +245,8 @@ class CallTypesRepository(object):
     def store(self, a_type, name, frame):
         self._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(a_type)
 
-    def sorted_file_names(self):
-        return sorted(self._dict.keys())
-
     def file_names(self):
-        return self._dict.keys()
+        return set(self._dict.keys())
 
     def line_numbers(self, file_name):
         return self._dict[file_name].keys()
@@ -267,8 +264,8 @@ class ReturnTypesRepository(object):
     def store(self, a_type, frame):
         self._dict[get_file_name(frame)][get_first_line_number(frame)].update(a_type)
 
-    def sorted_file_names(self):
-        return sorted(self._dict.keys())
+    def file_names(self):
+        return set(self._dict.keys())
 
     def sorted_return_types(self, file_name):
         findings_in_file = self._dict[file_name]
