@@ -16,5 +16,5 @@ class TestParser(unittest.TestCase):
             12: (13, 8, 13, 23, '"""one liner"""'),
             17: (17, 8, 18, 16, '"""two\n        liner"""'),
             21: (21, 8, 23, 11, '"""\n        three liner\n        """'),
-            26: (26, 8, 26, 47, '"""with newline \\n, or at the end \\n"""')}
-        ))
+            26: (26, 8, 26, 47, '"""with newline \\n, or at the end \\n"""'),
+        }))
