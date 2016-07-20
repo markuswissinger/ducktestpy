@@ -93,10 +93,10 @@ def module_name(clazz):
 
 
 def full_name(a_type):
-    try:
+    #try:
         return module_name(a_type) + a_type.__name__
-    except AttributeError:
-        return ''
+    #except AttributeError:
+    #    return ''
 
 
 def type_text(wrapper):
@@ -126,7 +126,9 @@ class DocstringWriter(object):
                 call_types = self.call_types.call_types(file_path, line_number)
                 to_add = []
                 for name in call_types:
-                    to_add.append(':type {}: {}'.format(name, get_type_names(call_types[name])))
+                    types = get_type_names(call_types[name])
+                    if types:
+                        to_add.append(':type {}: {}'.format(name, types))
                 print to_add
 
 
