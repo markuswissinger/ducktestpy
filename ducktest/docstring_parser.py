@@ -19,6 +19,8 @@ import tokenize
 
 from mock import Mock
 
+from ducktest import run
+
 
 class WrappedIterator(object):
     """python3 compatibility"""
@@ -28,6 +30,15 @@ class WrappedIterator(object):
 
     def next_line(self):
         return next(self.line_iterator)
+
+
+def is_hint_line(line):
+    return line.startswith(':type ') or line.startswith(':rtype')
+
+
+def clean_docstring(text):
+    doclines = inspect.cleandoc(text).strip('"').strip('\n').splitlines()
+    return [line for line in doclines if not is_hint_line(line)]
 
 
 def parse_docstrings(lines):
@@ -43,7 +54,7 @@ def parse_docstrings(lines):
         # print ','.join([str(item) for item in [token_type, text, srow, scol]])
         if prev_token_type == tokenize.INDENT and state == 'in_function':
             if token_type == tokenize.STRING:
-                docstring_lines = inspect.cleandoc(text).strip('"').strip('\n').splitlines()
+                docstring_lines = clean_docstring(text)
             else:  # no docstring
                 erow = srow
                 ecol = scol
@@ -74,6 +85,29 @@ def interesting_file_paths(directories):
                     yield os.path.join(root, file_name)
 
 
+def module_name(clazz):
+    name = clazz.__module__
+    if name == '__builtin__' or name == 'builtins':
+        return ''
+    return name + '.'
+
+
+def full_name(a_type):
+    try:
+        return module_name(a_type) + a_type.__name__
+    except AttributeError:
+        return ''
+
+
+def type_text(wrapper):
+    return full_name(wrapper.own_type)
+
+
+def get_type_names(type_wrappers):
+    sorted_wrappers = sorted(list(type_wrappers))
+    return ' or '.join([type_text(wrapper) for wrapper in sorted_wrappers])
+
+
 class DocstringWriter(object):
     def __init__(self, frame_processors, write_directories):
         """:type frame_processors: ducktest.type_wrappers.FrameProcessors"""
@@ -87,9 +121,24 @@ class DocstringWriter(object):
             print file_path
             lines = read_file(file_path)
             parsed_docstrings = parse_docstrings(lines)
+            print parsed_docstrings
             for line_number in sorted(parsed_docstrings.keys(), reverse=True):
-                pass
+                call_types = self.call_types.call_types(file_path, line_number)
+                to_add = []
+                for name in call_types:
+                    to_add.append(':type {}: {}'.format(name, get_type_names(call_types[name])))
+                print to_add
 
+
+class ConfigMock(object):
+    def __init__(self):
+        self.top_level_directory = '/home/markus/git/ducktestpy'
+        self.discover_tests_in_directories = ['/home/markus/git/ducktestpy/tests/sample']
+        self.write_docstrings_in_directories = ['/home/markus/git/ducktestpy/tests/sample']
+        self.ignore_call_parameter_names = ['self', 'cls']
 
 if __name__ == '__main__':
-    DocstringWriter(Mock(), ['/home/markus/git/ducktestpy/ducktest', ]).write_all()
+    config_mock = ConfigMock()
+    typing_debugger, processors = run(config_mock)
+
+    DocstringWriter(processors, config_mock.write_docstrings_in_directories).write_all()

@@ -251,6 +251,9 @@ class CallTypesRepository(object):
     def line_numbers(self, file_name):
         return self._dict[file_name].keys()
 
+    def call_types(self, file_name, line_number):
+        return self._dict[file_name][line_number]
+
     def sorted_call_types(self, file_name):
         findings_in_file = self._dict[file_name]
         line_numbers = sorted(findings_in_file.keys(), reverse=True)
