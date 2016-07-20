@@ -12,7 +12,7 @@ class TestParser(unittest.TestCase):
 
         assert_that(positions, is_({
             5: (5, 8, 5, 14, []),
-            9: (9, 8, 9, 8, ''),
+            9: (9, 8, 9, 8, []),
             12: (13, 8, 13, 23, ['one liner']),
             17: (17, 8, 18, 16, ['two', 'liner']),
             21: (21, 8, 23, 11, ['three liner']),

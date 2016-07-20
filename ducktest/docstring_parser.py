@@ -43,12 +43,12 @@ def parse_docstrings(lines):
         # print ','.join([str(item) for item in [token_type, text, srow, scol]])
         if prev_token_type == tokenize.INDENT and state == 'in_function':
             if token_type == tokenize.STRING:
-                docstring = inspect.cleandoc(text).strip('"').strip('\n').splitlines()
+                docstring_lines = inspect.cleandoc(text).strip('"').strip('\n').splitlines()
             else:  # no docstring
                 erow = srow
                 ecol = scol
-                docstring = ''
-            positions[first_line] = (srow - 1, scol, erow - 1, ecol, docstring)
+                docstring_lines = []
+            positions[first_line] = (srow - 1, scol, erow - 1, ecol, docstring_lines)
             state = 'docstring_position_found'
         if text == '@':
             maybe_first_line = srow
@@ -66,6 +66,14 @@ def read_file(file_name):
         return f.readlines()
 
 
+def interesting_file_paths(directories):
+    for directory in directories:
+        for root, _, files in os.walk(directory):
+            for file_name in files:
+                if file_name.endswith('.py'):
+                    yield os.path.join(root, file_name)
+
+
 class DocstringWriter(object):
     def __init__(self, frame_processors, write_directories):
         """:type frame_processors: ducktest.type_wrappers.FrameProcessors"""
@@ -75,14 +83,12 @@ class DocstringWriter(object):
         # self.all_file_names = sorted(list(self.call_types.file_names() | self.return_types.file_names()))
 
     def write_all(self):
-        for directory in self.write_directories:
-            for root, _, files in os.walk(directory):
-                for file_name in files:
-                    if file_name.endswith('.py'):
-                        file_path = os.path.join(root, file_name)
-                        print file_path
-                        lines = read_file(file_path)
-                        print parse_docstrings(lines)
+        for file_path in interesting_file_paths(self.write_directories):
+            print file_path
+            lines = read_file(file_path)
+            parsed_docstrings = parse_docstrings(lines)
+            for line_number in sorted(parsed_docstrings.keys(), reverse=True):
+                pass
 
 
 if __name__ == '__main__':
