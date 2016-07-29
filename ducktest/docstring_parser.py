@@ -16,10 +16,12 @@ limitations under the License.
 import inspect
 import os
 import tokenize
+from abc import abstractmethod, ABCMeta
 
 from mock import Mock
 
 from ducktest import run
+from ducktest.type_wrappers import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
 
 
 class WrappedIterator(object):
@@ -93,19 +95,37 @@ def module_name(clazz):
 
 
 def full_name(a_type):
-    #try:
-        return module_name(a_type) + a_type.__name__
-    #except AttributeError:
+    # try:
+    return module_name(a_type) + a_type.__name__
+    # except AttributeError:
     #    return ''
 
 
-def type_text(wrapper):
-    return full_name(wrapper.own_type)
+def handle_mapper(a_type):
+    return [full_name(a_type.own_type) + ' of (' + full_name(list(mapped_type[0])[0].own_type) + ',' + full_name(
+        list(mapped_type[1])[0].own_type) + ')' for mapped_type in a_type.mapped_types]
+
+
+def handle_container_type(a_type):
+    return [full_name(a_type.own_type) + ' of ' + full_name(contained.own_type) for contained in a_type.contained_types]
+
+
+def handle_plain_type(a_type):
+    return [full_name(a_type.own_type)]
+
+
+wrapper_handler = {
+    MappingTypeWrapper: handle_mapper,
+    ContainerTypeWrapper: handle_container_type,
+    PlainTypeWrapper: handle_plain_type,
+}
 
 
 def get_type_names(type_wrappers):
-    sorted_wrappers = sorted(list(type_wrappers))
-    return ' or '.join([type_text(wrapper) for wrapper in sorted_wrappers])
+    resulting_wrappers = []
+    for type_wrapper in type_wrappers:
+        resulting_wrappers += wrapper_handler[type(type_wrapper)](type_wrapper)
+    return ' or '.join(sorted(resulting_wrappers))
 
 
 class DocstringWriter(object):
@@ -129,6 +149,10 @@ class DocstringWriter(object):
                     types = get_type_names(call_types[name])
                     if types:
                         to_add.append(':type {}: {}'.format(name, types))
+                return_types = self.return_types.return_types(file_path, line_number)
+                type_names = get_type_names(return_types)
+                if type_names:
+                    to_add.append(':rtype: {}'.format(type_names))
                 print to_add
 
 
@@ -138,6 +162,7 @@ class ConfigMock(object):
         self.discover_tests_in_directories = ['/home/markus/git/ducktestpy/tests/sample']
         self.write_docstrings_in_directories = ['/home/markus/git/ducktestpy/tests/sample']
         self.ignore_call_parameter_names = ['self', 'cls']
+
 
 if __name__ == '__main__':
     config_mock = ConfigMock()

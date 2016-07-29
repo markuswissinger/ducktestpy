@@ -270,6 +270,9 @@ class ReturnTypesRepository(object):
     def file_names(self):
         return set(self._dict.keys())
 
+    def return_types(self, file_name, line_number):
+        return self._dict[file_name][line_number]
+
     def sorted_return_types(self, file_name):
         findings_in_file = self._dict[file_name]
         line_numbers = sorted(findings_in_file.keys(), reverse=True)
