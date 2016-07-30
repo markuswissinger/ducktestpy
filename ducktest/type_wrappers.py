@@ -218,7 +218,8 @@ class ReturnTypeStorer(Processor):
         self.return_types = return_types
 
     def process(self, value, frame):
-        self.return_types.store(self.get_type(value), frame)
+        if not value is None:
+            self.return_types.store(self.get_type(value), frame)
 
 
 FunctionParameters = namedtuple('FunctionParameters', ['line_number', 'types'])

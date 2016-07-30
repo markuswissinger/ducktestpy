@@ -61,7 +61,7 @@ def parse_docstrings(lines):
                 erow = srow
                 ecol = scol
                 docstring_lines = []
-            positions[first_line] = (srow - 1, scol, erow - 1, ecol, docstring_lines)
+            positions[first_line] = (srow, scol, erow, ecol, docstring_lines)
             state = 'docstring_position_found'
         if text == '@':
             maybe_first_line = srow
@@ -141,19 +141,19 @@ class DocstringWriter(object):
             print file_path
             lines = read_file(file_path)
             parsed_docstrings = parse_docstrings(lines)
-            print parsed_docstrings
-            for line_number in sorted(parsed_docstrings.keys(), reverse=True):
-                call_types = self.call_types.call_types(file_path, line_number)
+            for def_line_number in sorted(parsed_docstrings.keys(), reverse=True):
+                call_types = self.call_types.call_types(file_path, def_line_number)
                 to_add = []
                 for name in call_types:
                     types = get_type_names(call_types[name])
                     if types:
                         to_add.append(':type {}: {}'.format(name, types))
-                return_types = self.return_types.return_types(file_path, line_number)
+                return_types = self.return_types.return_types(file_path, def_line_number)
                 type_names = get_type_names(return_types)
                 if type_names:
                     to_add.append(':rtype: {}'.format(type_names))
-                print to_add
+                parsed_docstring = parsed_docstrings[def_line_number]
+                print to_add + parsed_docstring[4]
 
 
 class ConfigMock(object):
