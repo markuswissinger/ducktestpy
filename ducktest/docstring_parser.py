@@ -128,19 +128,25 @@ def get_type_names(type_wrappers):
     return ' or '.join(sorted(resulting_wrappers))
 
 
+def write_file(file_name, lines):
+    with open(file_name, 'w') as f:
+        f.writelines(lines)
+
+
 class DocstringWriter(object):
     def __init__(self, frame_processors, write_directories):
         """:type frame_processors: ducktest.type_wrappers.FrameProcessors"""
         self.write_directories = write_directories
         self.call_types = frame_processors.call_types
         self.return_types = frame_processors.return_types
-        # self.all_file_names = sorted(list(self.call_types.file_names() | self.return_types.file_names()))
 
     def write_all(self):
         for file_path in interesting_file_paths(self.write_directories):
             print file_path
             lines = read_file(file_path)
+            print lines
             parsed_docstrings = parse_docstrings(lines)
+            print parsed_docstrings
             for def_line_number in sorted(parsed_docstrings.keys(), reverse=True):
                 call_types = self.call_types.call_types(file_path, def_line_number)
                 to_add = []
@@ -148,12 +154,19 @@ class DocstringWriter(object):
                     types = get_type_names(call_types[name])
                     if types:
                         to_add.append(':type {}: {}'.format(name, types))
+
                 return_types = self.return_types.return_types(file_path, def_line_number)
                 type_names = get_type_names(return_types)
                 if type_names:
                     to_add.append(':rtype: {}'.format(type_names))
-                parsed_docstring = parsed_docstrings[def_line_number]
-                print to_add + parsed_docstring[4]
+
+                srow, scol, erow, ecol, doclines = parsed_docstrings[def_line_number]
+                new_docstring = ['"""'] + to_add + doclines + ['"""']
+                formatted = [' ' * scol + line + '\n' for line in new_docstring]
+                print formatted
+                lines[srow - 1:erow] = formatted
+            print lines
+            write_file(file_path, lines)
 
 
 class ConfigMock(object):
