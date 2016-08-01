@@ -39,7 +39,7 @@ def is_hint_line(line):
 
 
 def clean_docstring(text):
-    doclines = inspect.cleandoc(text).strip('"').strip('\n').splitlines()
+    doclines = inspect.cleandoc(text).lstrip('"').lstrip('\n').rstrip('\n').rstrip('"').splitlines()
     return [line for line in doclines if not is_hint_line(line)]
 
 
@@ -142,11 +142,11 @@ class DocstringWriter(object):
 
     def write_all(self):
         for file_path in interesting_file_paths(self.write_directories):
-            print file_path
+            # print file_path
             lines = read_file(file_path)
-            print lines
+            # print lines
             parsed_docstrings = parse_docstrings(lines)
-            print parsed_docstrings
+            # print parsed_docstrings
             for def_line_number in sorted(parsed_docstrings.keys(), reverse=True):
                 call_types = self.call_types.call_types(file_path, def_line_number)
                 to_add = []
@@ -161,19 +161,21 @@ class DocstringWriter(object):
                     to_add.append(':rtype: {}'.format(type_names))
 
                 srow, scol, erow, ecol, doclines = parsed_docstrings[def_line_number]
-                new_docstring = ['"""'] + to_add + doclines + ['"""']
+                full_docstring = to_add + doclines
+                new_docstring = ['"""'] + full_docstring + ['"""']
                 formatted = [' ' * scol + line + '\n' for line in new_docstring]
-                print formatted
-                lines[srow - 1:erow] = formatted
-            print lines
+                # print formatted
+                if len(full_docstring) > 0:
+                    lines = lines[:srow - 1] + formatted + lines[srow + len(doclines)+1:]
+            # print lines
             write_file(file_path, lines)
 
 
 class ConfigMock(object):
     def __init__(self):
         self.top_level_directory = '/home/markus/git/ducktestpy'
-        self.discover_tests_in_directories = ['/home/markus/git/ducktestpy/tests/sample']
-        self.write_docstrings_in_directories = ['/home/markus/git/ducktestpy/tests/sample']
+        self.discover_tests_in_directories = ['/home/markus/git/ducktestpy/tests/sample/integration']
+        self.write_docstrings_in_directories = ['/home/markus/git/ducktestpy/tests/sample/integration']
         self.ignore_call_parameter_names = ['self', 'cls']
 
 
