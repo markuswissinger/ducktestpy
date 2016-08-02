@@ -165,8 +165,15 @@ class DocstringWriter(object):
                 new_docstring = ['"""'] + full_docstring + ['"""']
                 formatted = [' ' * scol + line + '\n' for line in new_docstring]
                 # print formatted
-                if len(full_docstring) > 0:
-                    lines = lines[:srow - 1] + formatted + lines[srow + len(doclines)+1:]
+                smores = 0
+                if len(doclines) == 0:
+                    smores = -2
+                if len(doclines) == 1:
+                    smores = -2
+                if len(doclines) == 2:
+                    smores = -2
+                if len(full_docstring) > 2:
+                    lines = lines[:srow - 1] + formatted + lines[srow + len(doclines) + 1 + smores:]
             # print lines
             write_file(file_path, lines)
 
