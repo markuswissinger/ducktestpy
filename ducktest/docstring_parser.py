@@ -15,6 +15,7 @@ limitations under the License.
 """
 import inspect
 import os
+import re
 import tokenize
 from abc import abstractmethod, ABCMeta
 
@@ -39,7 +40,7 @@ def is_hint_line(line):
 
 
 def clean_docstring(text):
-    doclines = inspect.cleandoc(text).lstrip('"').lstrip('\n').rstrip('\n').rstrip('"').splitlines()
+    doclines = inspect.cleandoc(text).splitlines()
     return [line for line in doclines if not is_hint_line(line)]
 
 
@@ -161,21 +162,33 @@ class DocstringWriter(object):
                     to_add.append(':rtype: {}'.format(type_names))
 
                 srow, scol, erow, ecol, doclines = parsed_docstrings[def_line_number]
-                full_docstring = to_add + doclines
+
+                clean_doclines, number_of_addtional_lines_by_triple_quotes = process_doclines(doclines)
+                print repr(clean_doclines)
+
+                full_docstring = to_add + clean_doclines
                 new_docstring = ['"""'] + full_docstring + ['"""']
                 formatted = [' ' * scol + line + '\n' for line in new_docstring]
                 # print formatted
-                smores = 0
-                if len(doclines) == 0:
-                    smores = -2
-                if len(doclines) == 1:
-                    smores = -2
-                if len(doclines) == 2:
-                    smores = -2
-                if len(full_docstring) > 2:
-                    lines = lines[:srow - 1] + formatted + lines[srow + len(doclines) + 1 + smores:]
+                lines = lines[:srow - 1] + formatted + lines[srow + len(
+                    doclines) + 1 - number_of_addtional_lines_by_triple_quotes:]
             # print lines
             write_file(file_path, lines)
+
+one_liner_regex=re.compile('"""(.*)"""')
+
+def is_one_liner(doclines):
+    return one_liner_regex.match(doclines[0])
+
+def process_doclines(doclines):
+    print repr(doclines)
+    if not doclines:
+        return [], 2
+    one_liner=one_liner_regex.match(doclines[0])
+    if one_liner:
+        return list(one_liner.groups(0)), 2
+
+    return doclines[1:-1], 0
 
 
 class ConfigMock(object):
