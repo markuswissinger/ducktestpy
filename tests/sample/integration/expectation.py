@@ -1,3 +1,11 @@
+def list_example(a):
+    """
+    :type a: list of int or list of str
+    :rtype: list of int or list of str
+    """
+    return a
+
+
 def multi_line_docstring_example():
     """
     :rtype: str
@@ -25,6 +33,11 @@ def single_line_docstring(a):
     One line
     """
     return a
+
+
+def single_result_line():
+    """:rtype: int"""
+    return 1
 
 
 def new_docstring(a):

@@ -1,3 +1,7 @@
+def list_example(a):
+    return a
+
+
 def multi_line_docstring_example():
     """
     La \ndi dee
@@ -17,6 +21,10 @@ def two_line_docstring():
 def single_line_docstring(a):
     """One line"""
     return a
+
+
+def single_result_line():
+    return 1
 
 
 def new_docstring(a):

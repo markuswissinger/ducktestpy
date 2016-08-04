@@ -124,9 +124,19 @@ wrapper_handler = {
 
 def get_type_names(type_wrappers):
     resulting_wrappers = []
+    non_plain_names = set()
     for type_wrapper in type_wrappers:
         resulting_wrappers += wrapper_handler[type(type_wrapper)](type_wrapper)
-    return ' or '.join(sorted(resulting_wrappers))
+        if type(type_wrapper) != PlainTypeWrapper:
+            non_plain_names.add(full_name(type_wrapper.own_type))
+
+    plain_types_excluded = []
+    for full_type_name in resulting_wrappers:
+        if full_type_name in non_plain_names:
+            continue
+        plain_types_excluded.append(full_type_name)
+
+    return ' or '.join(sorted(list(set(plain_types_excluded))))
 
 
 def write_file(file_name, lines):
@@ -167,7 +177,10 @@ class DocstringWriter(object):
 
                 full_docstring = to_add + clean_doclines
                 if full_docstring:
-                    new_docstring = ['"""'] + full_docstring + ['"""']
+                    if len(full_docstring) == 1:
+                        new_docstring = ['"""' + full_docstring[0] + '"""']
+                    else:
+                        new_docstring = ['"""'] + full_docstring + ['"""']
                 else:
                     new_docstring = []
                 formatted = [' ' * scol + line + '\n' for line in new_docstring]
