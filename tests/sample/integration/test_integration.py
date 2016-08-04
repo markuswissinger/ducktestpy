@@ -1,9 +1,11 @@
 import unittest
 
 from hamcrest import assert_that, is_
+from mock import Mock, create_autospec
 
 from tests.sample.integration.integration import multi_line_docstring_example, no_docstring, new_docstring, \
-    single_line_docstring, two_line_docstring, list_example, single_result_line
+    single_line_docstring, two_line_docstring, list_example, single_result_line, mock_example, non_builtin_example
+from tests.sample.integration.stuff import Some
 
 
 class TestIntegration(unittest.TestCase):
@@ -29,3 +31,13 @@ class TestIntegration(unittest.TestCase):
         assert_that(list_example([]), is_([]))
         assert_that(list_example([1]), is_([1]))
         assert_that(list_example([1, "1"]), is_([1, "1"]))
+
+    def test_mock_example(self):
+        a = Mock()
+        b = create_autospec(int)
+        assert_that(mock_example(a), is_(a))
+        assert_that(mock_example(b), is_(b))
+
+    def test_non_builtin(self):
+        some = Some()
+        assert_that(non_builtin_example(some), is_(some))

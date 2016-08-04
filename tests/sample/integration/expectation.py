@@ -1,3 +1,19 @@
+def non_builtin_example(a):
+    """
+    :type a: tests.sample.integration.stuff.Some
+    :rtype: tests.sample.integration.stuff.Some
+    """
+    return a
+
+
+def mock_example(a):
+    """
+    :type a: int
+    :rtype: int
+    """
+    return a
+
+
 def list_example(a):
     """
     :type a: list of int or list of str

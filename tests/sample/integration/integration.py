@@ -1,3 +1,11 @@
+def non_builtin_example(a):
+    return a
+
+
+def mock_example(a):
+    return a
+
+
 def list_example(a):
     return a
 
