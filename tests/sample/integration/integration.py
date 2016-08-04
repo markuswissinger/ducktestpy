@@ -1,3 +1,7 @@
+def generator_example():
+    yield 1
+
+
 def non_builtin_example(a):
     return a
 

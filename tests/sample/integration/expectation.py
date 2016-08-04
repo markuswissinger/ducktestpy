@@ -1,15 +1,20 @@
+def generator_example():
+    """:rtype: generator"""
+    yield 1
+
+
 def non_builtin_example(a):
     """
-    :type a: tests.sample.integration.stuff.Some
-    :rtype: tests.sample.integration.stuff.Some
+    :type a: tests.sample.integration.stuff.Other or tests.sample.integration.stuff.Some
+    :rtype: tests.sample.integration.stuff.Other or tests.sample.integration.stuff.Some
     """
     return a
 
 
 def mock_example(a):
     """
-    :type a: int
-    :rtype: int
+    :type a: int or tests.sample.integration.stuff.Some
+    :rtype: int or tests.sample.integration.stuff.Some
     """
     return a
 
