@@ -21,7 +21,7 @@ from abc import abstractmethod, ABCMeta
 
 from mock import Mock
 
-from ducktest import run
+from ducktest.type_wrappers import run
 from ducktest.type_wrappers import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
 
 

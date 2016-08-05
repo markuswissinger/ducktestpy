@@ -18,8 +18,8 @@ import os
 import sys
 
 from ducktest.config_reader import Configuration
-from ducktest.docstring_writer import DocstringWriter
-from ducktest.typer import run
+from ducktest.docstring_parser import DocstringWriter
+from ducktest.type_wrappers import run
 
 
 def version():
@@ -43,4 +43,4 @@ def main():
     typing_debugger, processors = run(configuration)
 
     if typing_debugger:
-        DocstringWriter(typing_debugger).write_all()
+        DocstringWriter(processors, configuration.write_docstrings_in_directories).write_all()

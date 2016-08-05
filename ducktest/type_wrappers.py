@@ -1,8 +1,10 @@
 import types
+import unittest
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple, Container, Iterable, Mapping, defaultdict, OrderedDict
 
 import mock
+import sys
 from future.utils import iteritems
 from past.builtins import basestring
 
@@ -307,3 +309,64 @@ class FrameProcessors(object):
             GeneratorTypeProcessor(self.return_types),
             ReturnTypeStorer(self.return_types, typer),
         )
+
+
+class Tracer(object):
+    def __init__(self, top_level_dir, call_frame_processor, return_frame_processor):
+        self.return_frame_processor = return_frame_processor
+        self.call_frame_processor = call_frame_processor
+        self.top_level_dir = top_level_dir
+
+    def runcall(self, method, *args, **kwargs):
+        sys.settrace(self.trace_dispatch)
+        method(*args, **kwargs)
+
+    def trace_dispatch(self, frame, event, arg):
+        if get_file_name(frame).startswith(self.top_level_dir):
+            if event == 'call':
+                self.on_call(frame)
+                return self.trace_dispatch
+            if event == 'return':
+                self.on_return(frame, arg)
+
+    def on_call(self, frame):
+        self.call_frame_processor.process(frame)
+
+    def on_return(self, frame, return_value):
+        self.return_frame_processor.process(frame, return_value)
+
+
+class DuckTestResult(unittest.runner.TextTestResult):
+    overall_success = True
+
+    @classmethod
+    def remember_failure(cls):
+        cls.overall_success = False
+
+    def addError(self, test, err):
+        self.remember_failure()
+        super(DuckTestResult, self).addError(test, err)
+
+    def addFailure(self, test, err):
+        self.remember_failure()
+        super(DuckTestResult, self).addFailure(test, err)
+
+    def addExpectedFailure(self, test, err):
+        self.remember_failure()
+        super(DuckTestResult, self).addExpectedFailure(test, err)
+
+    def addUnexpectedSuccess(self, test):
+        self.remember_failure()
+        super(DuckTestResult, self).addUnexpectedSuccess(test)
+
+
+def run(conf):
+    processors = FrameProcessors(conf)
+    tracer = Tracer(conf.top_level_directory, processors.call_frame_processor, processors.return_frame_processor)
+    loader = unittest.TestLoader()
+    runner = unittest.TextTestRunner(failfast=True, resultclass=DuckTestResult)
+    for test_directory in conf.discover_tests_in_directories:
+        suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
+        tracer.runcall(runner.run, suite)
+    if DuckTestResult.overall_success:
+        return tracer, processors
