@@ -208,18 +208,3 @@ def process_doclines(doclines):
         doclines[0] = doclines[0].lstrip('"').lstrip("'")
         doclines[-1] = doclines[-1].rstrip('"').rstrip("'")
     return doclines
-
-
-class ConfigMock(object):
-    def __init__(self):
-        self.top_level_directory = '/home/markus/git/ducktestpy'
-        self.discover_tests_in_directories = ['/home/markus/git/ducktestpy/tests/sample/integration']
-        self.write_docstrings_in_directories = ['/home/markus/git/ducktestpy/tests/sample/integration']
-        self.ignore_call_parameter_names = ['self', 'cls']
-
-
-if __name__ == '__main__':
-    config_mock = ConfigMock()
-    typing_debugger, processors = run(config_mock)
-
-    DocstringWriter(processors, config_mock.write_docstrings_in_directories).write_all()
