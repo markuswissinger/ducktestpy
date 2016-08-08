@@ -1,4 +1,4 @@
-from ducktest.type_wrappers import PlainTypeWrapper
+from ducktest.type_wrappers import PlainTypeWrapper, ContainerTypeWrapper
 
 
 def combinations(some_set):
@@ -16,3 +16,11 @@ def handle_plain(wrappers):
         if issubclass(some, other):
             own_types.remove(some)
     return {PlainTypeWrapper(filtered) for filtered in own_types}
+
+
+def handle_container(wrappers):
+    for some, other in combinations(wrappers):
+        if issubclass(some.own_type, other.own_type):
+            wrappers.remove(some)
+            wrappers.add(ContainerTypeWrapper(other, some.contained_types))
+
