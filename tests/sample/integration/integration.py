@@ -30,6 +30,13 @@ def two_line_docstring():
     return 1
 
 
+def single_line_return_value(a):
+    """
+    :rtype: int
+    """
+    return 1
+
+
 def single_line_docstring(a):
     """One line"""
     return a
