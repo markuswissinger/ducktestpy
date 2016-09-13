@@ -301,14 +301,15 @@ class Tracer(object):
     def runcall(self, method, *args, **kwargs):
         sys.settrace(self.trace_dispatch)
         method(*args, **kwargs)
+        sys.settrace(None)
 
     def trace_dispatch(self, frame, event, arg):
         if get_file_name(frame).startswith(self.top_level_dir):
             if event == 'call':
                 self.on_call(frame)
-                return self.trace_dispatch
             if event == 'return':
                 self.on_return(frame, arg)
+        return self.trace_dispatch
 
     def on_call(self, frame):
         self.call_frame_processor.process(frame)

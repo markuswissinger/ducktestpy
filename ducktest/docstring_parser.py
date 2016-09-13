@@ -190,13 +190,6 @@ class DocstringWriter(object):
             write_file(file_path, lines)
 
 
-one_liner_regex = re.compile('"""(.*)"""')
-
-
-def is_one_liner(doclines):
-    return one_liner_regex.match(doclines[0])
-
-
 def process_doclines(doclines):
     if not doclines:
         return []
