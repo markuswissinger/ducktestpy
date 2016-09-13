@@ -74,7 +74,7 @@ class CallVariableSplitter(Processor):
         for name in get_variable_names(frame):
             try:
                 value = get_local_variable(frame, name)
-            except KeyError:
+            except:
                 continue
             self.next_processor.process(value, name, frame)
 
@@ -307,7 +307,7 @@ class Tracer(object):
         if get_file_name(frame).startswith(self.top_level_dir):
             if event == 'call':
                 self.on_call(frame)
-            if event == 'return':
+            elif event == 'return':
                 self.on_return(frame, arg)
         return self.trace_dispatch
 
