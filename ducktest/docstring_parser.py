@@ -57,7 +57,7 @@ def parse_docstrings(lines):
         # print ','.join([str(item) for item in [token_type, text, srow, scol]])
         if prev_token_type == tokenize.INDENT and state == 'in_function':
             if token_type == tokenize.STRING:
-                docstring_lines = clean_docstring(text)
+                docstring_lines = inspect.cleandoc(text).splitlines()
             else:  # no docstring
                 erow = srow
                 ecol = scol
@@ -200,4 +200,4 @@ def process_doclines(doclines):
     if doclines:
         doclines[0] = doclines[0].lstrip('"').lstrip("'")
         doclines[-1] = doclines[-1].rstrip('"').rstrip("'")
-    return doclines
+    return [docline for docline in doclines if not is_hint_line(docline)]
