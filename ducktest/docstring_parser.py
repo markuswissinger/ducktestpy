@@ -39,38 +39,38 @@ def is_hint_line(line):
     return line.startswith(':type ') or line.startswith(':rtype')
 
 
-def clean_docstring(text):
-    doclines = inspect.cleandoc(text).splitlines()
-    return [line for line in doclines if not is_hint_line(line)]
+INITIAL = 0
+IN_FUNCTION = 1
+DOCSTRING_POSITION_FOUND = 2
 
 
 def parse_docstrings(lines):
     """:returns a dictionary {first_method_line_number:
     (start_line_index, start_coloumn, end_line_index, end_coloumn, docstring)}"""
     positions = {}
-    state = ''
+    state = INITIAL
     prev_token_type = None
     maybe_first_line = None
     first_line = None
     wrapped_iterator = WrappedIterator(lines)
     for token_type, text, (srow, scol), (erow, ecol), l in tokenize.generate_tokens(wrapped_iterator.next_line):
         # print ','.join([str(item) for item in [token_type, text, srow, scol]])
-        if prev_token_type == tokenize.INDENT and state == 'in_function':
+        if state == IN_FUNCTION and prev_token_type == tokenize.INDENT:
             if token_type == tokenize.STRING:
                 docstring_lines = inspect.cleandoc(text).splitlines()
-            else:  # no docstring
+            else:  # method has no docstring
                 erow = srow
                 ecol = scol
                 docstring_lines = []
             positions[first_line] = (srow, scol, erow, ecol, docstring_lines)
-            state = 'docstring_position_found'
+            state = DOCSTRING_POSITION_FOUND
         if text == '@':
             maybe_first_line = srow
         if token_type == tokenize.INDENT or token_type == tokenize.DEDENT:
             maybe_first_line = None
         if text == 'def' and token_type == tokenize.NAME:
             first_line = maybe_first_line or srow
-            state = 'in_function'
+            state = IN_FUNCTION
         prev_token_type = token_type
     return positions
 
