@@ -74,7 +74,7 @@ class CallVariableSplitter(Processor):
         for name in get_variable_names(frame):
             try:
                 value = get_local_variable(frame, name)
-            except:
+            except KeyError:
                 continue
             self.next_processor.process(value, name, frame)
 
