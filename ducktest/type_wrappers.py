@@ -79,11 +79,6 @@ class CallVariableSplitter(Processor):
             self.next_processor.process(value, name, frame)
 
 
-class ReturnVariableSplitter(Processor):
-    def process(self, frame, return_value):
-        self.next_processor.process(return_value, frame)
-
-
 class NameValidater(Processor):
     def __init__(self, excluded_names):
         super(NameValidater, self).__init__()
@@ -191,11 +186,11 @@ class GeneratorTypeProcessor(Processor):
         super(GeneratorTypeProcessor, self).__init__()
         self.return_types = return_types
 
-    def process(self, return_value, frame):
+    def process(self, frame, return_value):
         if is_generator(frame):
             self.return_types.store({PlainTypeWrapper(types.GeneratorType)}, frame)
         else:
-            self.next_processor.process(return_value, frame)
+            self.next_processor.process(frame, return_value)
 
 
 class IdleProcessor(Processor):
@@ -219,7 +214,7 @@ class ReturnTypeStorer(Processor):
         self.get_type = processor.process
         self.return_types = return_types
 
-    def process(self, value, frame):
+    def process(self, frame, value):
         if not value is None:
             self.return_types.store(self.get_type(value), frame)
 
@@ -269,12 +264,12 @@ class FrameProcessors(object):
         self.call_types = CallTypesRepository()
         self.return_types = ReturnTypesRepository()
 
-        head = IdleProcessor()
-        typer = chain(
-            head,
-            MappingTypeProcessor(head),
-            ContainerTypeProcessor(head),
-            PlainTypeProcessor()
+        typer = IdleProcessor()
+        chain(
+            typer,
+            MappingTypeProcessor(typer),
+            ContainerTypeProcessor(typer),
+            PlainTypeProcessor(),
         )
 
         self.call_frame_processor = chain(
@@ -286,7 +281,6 @@ class FrameProcessors(object):
 
         self.return_frame_processor = chain(
             DirectoriesValidater(configuration.write_docstrings_in_directories),
-            ReturnVariableSplitter(),
             GeneratorTypeProcessor(self.return_types),
             ReturnTypeStorer(self.return_types, typer),
         )
@@ -294,9 +288,9 @@ class FrameProcessors(object):
 
 class Tracer(object):
     def __init__(self, top_level_dir, call_frame_processor, return_frame_processor):
-        self.return_frame_processor = return_frame_processor
-        self.call_frame_processor = call_frame_processor
         self.top_level_dir = top_level_dir
+        self.on_call = call_frame_processor.process
+        self.on_return = return_frame_processor.process
 
     def runcall(self, method, *args, **kwargs):
         sys.settrace(self.trace_dispatch)
@@ -310,12 +304,6 @@ class Tracer(object):
             elif event == 'return':
                 self.on_return(frame, arg)
         return self.trace_dispatch
-
-    def on_call(self, frame):
-        self.call_frame_processor.process(frame)
-
-    def on_return(self, frame, return_value):
-        self.return_frame_processor.process(frame, return_value)
 
 
 class DuckTestResult(unittest.runner.TextTestResult):
