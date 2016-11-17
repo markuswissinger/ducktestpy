@@ -36,7 +36,7 @@ class Configuration(object):
         self._write_directories = []
         self._ignore_write_directories = []
         self.ignore_call_parameter_names = []
-        self.config_path = os.path.split(file_path)[0]
+        self._config_path = os.path.split(file_path)[0]
 
     @classmethod
     def from_file_path(cls, path):
@@ -47,19 +47,19 @@ class Configuration(object):
 
     @property
     def top_level_directory(self):
-        return os.path.join(self.config_path, self._top_level_directory)
+        return os.path.join(self._config_path, self._top_level_directory)
 
     @property
     def discover_tests_in_directories(self):
         if not self._test_directories:
-            return [self.config_path]
-        return [os.path.join(self.config_path, discover_dir) for discover_dir in self._test_directories]
+            return [self._config_path]
+        return [os.path.join(self._config_path, discover_dir) for discover_dir in self._test_directories]
 
     @property
     def write_docstrings_in_directories(self):
         if not self._write_directories:
-            return [self.config_path]
-        return [os.path.join(self.config_path, write_dir) for write_dir in self._write_directories]
+            return [self._config_path]
+        return [os.path.join(self._config_path, write_dir) for write_dir in self._write_directories]
 
     def __str__(self):
         return 'top_level_directory: {}, discover_tests_in: {}, write_in: {}, ignore_parameter_names: {}'.format(
