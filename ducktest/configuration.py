@@ -3,13 +3,7 @@ import os
 from ducktest.docstring_parser import DocstringWriter
 
 from ducktest import run
-
-
-def version():
-    here = os.path.abspath(os.path.dirname(__file__))
-    project_root = os.path.dirname(here)
-    with open(os.path.join(project_root, 'VERSION.txt')) as f:
-        return f.read()
+from ducktest.version import VERSION
 
 
 class DucktestConfiguration(object):
@@ -41,7 +35,7 @@ class DucktestConfiguration(object):
 
     def run(self):
         """Script entry point"""
-        # print('ducktest {}'.format(version()))
+        print('ducktest {}'.format(VERSION))
         typing_debugger, processors = run(self)
 
         if typing_debugger:

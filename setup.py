@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import os
 from setuptools import setup
 
 from codecs import open
@@ -24,7 +24,7 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = str(f.read())
 
-with open(path.join(here, 'VERSION.txt')) as f:
+with open(path.join(here, 'ducktest', 'VERSION.txt')) as f:
     version = str(f.read())
 
 setup(
@@ -46,6 +46,7 @@ setup(
     ],
     keywords='development tool type hinting unittest living documentation',
     packages=['ducktest'],
+    data_files=[('ducktest', (os.path.join('ducktest', 'VERSION.txt'),))],
     install_requires=['future', 'mock', ],
     entry_points={
         'console_scripts': [
