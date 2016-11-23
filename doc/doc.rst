@@ -18,8 +18,9 @@ ducktest executes unit tests and collects the types of *method parameters* and *
 methods called in the process. Then ducktest writes that information into the :type and :rtype tags of the
 corresponding method docstrings.
 
-The sphinx notation has its limits, other output formats are bound to follow.
-
+Therefore ducktest creates a much closer link between your tests and your productive code. It will probably not catch
+bugs that the tests you wrote to create the type hints will not catch. But it gives an incentive to write those tests
+in the first place (and allows for autocompletion and navigation).
 
 use cases
 =========
@@ -79,6 +80,9 @@ non-builtin objects the full reference is written::
     def do_something(a_parameter):
         """:type a_parameter: some.full.reference.SomeClass"""
         pass
+
+
+Mocks are also the perfect opportunity to create type hints for abstract base classes.
 
 
 iterable collections
@@ -198,6 +202,16 @@ However, this is not a strong limitation since ducktest is supposed to execute u
 call *sys.settrace* or do multi-threading.
 
 
+limits of the sphinx notation
+-----------------------------
+
+-   classes as parameters can not be expressed
+-   functions and methods as parameters can not be described well
+-   Pycharm parses only tags that are on a single line, and therefore too long when multiple types are involved
+
+
+
+
 notable (intended) behaviour
 ============================
 
@@ -214,7 +228,7 @@ notable (intended) behaviour
 TODO
 ====
 
-- Old style classes are not resolved yet
+- Old style classes are not resolved
 - ducktest collects all types used in tests, even if they are sub- or supertypes of each other
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
   create warnings in static type checkers. There seems to be no way to express this correctly in the sphinx docstring
@@ -224,4 +238,4 @@ TODO
     - exclude subfolders from type writing
     - exclude subfolders from test execution
 - write not only docstrings but python stubs as well
-- Try PEP 484 Notation
+- try PEP 484 notation
