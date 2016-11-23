@@ -8,21 +8,17 @@ introduction
 
 Python source code can be augmented by type hints.
 These are useful for the human reader as well as static code analysers.
-ducktest is a command line tool to generate type hints.
+ducktest is a tool to generate type hints.
 
-Since Python is a dynamically typed language, its source code is quite immune to static code analysers.
-Python programs are best analysed at runtime.
+Unit tests should explain how to use your code. Good tests contain a lot of information about the types
+used in your code. Tests written with ducktest in mind contain as much information as designated type hints.
+Writing independent type hints is a form of duplication.
 
-Unit tests are meant to explain how your code should be used. At runtime, good tests contain all
-(or at least most of the) information about the types used in your code. Manually writing type hints is a form of
-duplication.
-
-So, it seems quite natural to examine the unit tests at runtime, extract type information and use it for type hints.
-ducktest does exactly that. It executes unit tests and collects the types of *method parameters* and *return values* of
+ducktest executes unit tests and collects the types of *method parameters* and *return values* of
 methods called in the process. Then ducktest writes that information into the :type and :rtype tags of the
 corresponding method docstrings.
 
-Other output formats are bound to follow.
+The sphinx notation has its limits, other output formats are bound to follow.
 
 
 use cases
@@ -168,70 +164,28 @@ Install ducktest via pip::
 usage
 =====
 
-configuration file
-------------------
+API
+---
 
-Call ducktest from the comand line on a configuration file::
+Create a python script on the top level of your project. For example run_ducktest.py::
 
-    ducktest ducktest.cfg
+    from ducktest.configuration import DucktestConfiguration
 
-The configuration_file is assumed to be on the top level of your project folder.
-All given paths in that file are relative to its location. It is good practice to keep the
-configuration_file in your version control system (e.g. git), so that all contributors can use the same configuration.
-Slash and backslash both work as path separators, to reduce cross-platform problems between linux or windows users.
-A # symbol marks the rest of the line as comment.
+    DucktestConfiguration(__file__,
+                          test_directories=[('demo', 'test'), ],
+                          write_directories=['demo'],
+                          ignore_call_parameter_names=('self', 'cls'),
+                          ).run()
 
-The file is organized in whitespace separated lines: *parameter_name* *value1* *value2*
-All given parameters are added to lists, so::
-
-    a_parameter value1 value2
-
-is equivalent to::
-
-    a_paramter value1
-    a_paramter value2
-
-
-An example configuration file::
-
-    # top_level_dir         py/
-    execute_tests_in        py/demo/
-    write_to                py/demo/
-    exclude_parameter_names self cls
-
-======================= ================================================================================================
-parameter               description
-======================= ================================================================================================
-top_level_dir           This is the first upward folder of your project that is not a python package
-                        (a.k.a. has no __init__.py). Give the path relative to the
-                        configuration_file.
-                        If the configuration_file resides in such a folder, this parameter should
-                        be omitted. There must be one or zero top_level_dir values in the configuration_file, not
-                        several. The top_level_dir is used by the unittest.TestLoader.discover method.
-
-execute_tests_in        Execute all unit tests that reside in this folders.
-
-write_to                Write type information to source code files residing in this folders.
-
-exclude_parameter_names Do not write type information for parameters with these names. Currently used to exclude pretty
-                        redundant information for self and cls parameters.
-
-======================= ================================================================================================
+First parameter is always the calling file, that is used to determine the top level directory.
+ducktest discovers and executes tests in test_directories, writes types in write_directories.
+All directories are relative to the top level directory. So the script run_ducktest.py can be checked in to version
+control. Directories with more than one level should be given as tuple, to avoid OS specific path separators.
+Parameter names in ignore_call_parameter_names are ignored. The default should do.
 
 
 pitfalls
 ========
-
-newline in docstring
---------------------
-
-An unescaped newline in a docstring will break the code after a ducktest run. So **always** escape::
-
-    \n -> \\n
-    \r -> \\r
-
-etc.
-
 
 settrace
 --------
@@ -244,17 +198,15 @@ However, this is not a strong limitation since ducktest is supposed to execute u
 call *sys.settrace* or do multi-threading.
 
 
-
-
 notable (intended) behaviour
 ============================
 
 -   ducktest uses the failfast option of unittest. ducktest does not write type information if any of the executed tests
     failed.
 
--   ducktest deletes *all* :type and :rtype tags in docstrings it touches before writing. So a failed renaming does not
-    result in a broken docstring. Type tags from other sources (e.g. the developer) will be lost. Just do never write
-    those tags again by hand.
+-   ducktest deletes *all* :type and :rtype tags in all files in the write_directories before writing. So a failed
+    renaming does not result in a broken docstring. Type tags from other sources (e.g. the developer) will be lost.
+    Just do never write those tags again by hand.
 
 -   ducktest does not write tags for NoneType or a plain mock.Mock (without _spec_class)
 
@@ -271,5 +223,5 @@ TODO
     - handle hand-written mocks
     - exclude subfolders from type writing
     - exclude subfolders from test execution
-    - delete all :type and :rtype tags from files (not just the overwritten ones) in the write_to folder
 - write not only docstrings but python stubs as well
+- Try PEP 484 Notation
