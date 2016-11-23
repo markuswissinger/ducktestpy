@@ -25,7 +25,7 @@ from ducktest.type_wrappers import run
 def version():
     here = os.path.abspath(os.path.dirname(__file__))
     project_root = os.path.dirname(here)
-    with open(os.path.join(project_root, 'VERSION.txt')) as f:
+    with open(os.path.join(project_root, 'ducktest', 'VERSION.txt')) as f:
         return f.read()
 
 
