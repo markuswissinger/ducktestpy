@@ -25,7 +25,7 @@ class DucktestConfiguration(object):
         self.ignore_call_parameter_names = ignore_parameter_names
 
     def in_full(self, path_particle):
-        return os.path.join(self._path, path_particle)
+        return os.path.join(self._path, *path_particle)
 
     def dirlist(self, list_of_tuples):
         if list_of_tuples:
