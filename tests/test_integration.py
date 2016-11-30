@@ -47,7 +47,7 @@ class TestIntegration(unittest.TestCase):
             try:
                 assert_that(line, is_(expected_line))
             except AssertionError as e:
-                print 'Error in line {}'.format(i)
+                print('Error in line {}'.format(i))
                 raise e
 
     def tearDown(self):

@@ -1,13 +1,15 @@
 import unittest
 
 from hamcrest import assert_that, is_
+from os import path
 
 from ducktest.docstring_parser import read_file, parse_docstrings
 
 
 class TestParser(unittest.TestCase):
     def test_some(self):
-        lines = read_file('parse_example.py')
+        here = path.abspath(path.dirname(__file__))
+        lines = read_file(path.join(here, 'parse_example.py'))
         positions = parse_docstrings(lines)
 
         assert_that(positions, is_({
