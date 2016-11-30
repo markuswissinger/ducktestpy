@@ -29,8 +29,8 @@ class TestIntegration(unittest.TestCase):
         assert_that(two_line_docstring(), is_(1))
 
     def test_list_example(self):
+        assert_that(list_example([u'1']), is_([u'1']))
         assert_that(list_example([]), is_([]))
-        assert_that(list_example([1]), is_([1]))
         assert_that(list_example([1, "1"]), is_([1, "1"]))
 
     def test_mock_example(self):

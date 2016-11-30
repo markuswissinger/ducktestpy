@@ -21,8 +21,8 @@ def mock_example(a):
 
 def list_example(a):
     """
-    :type a: list of int or list of str
-    :rtype: list of int or list of str
+    :type a: list of int or list of str or list of unicode
+    :rtype: list of int or list of str or list of unicode
     """
     return a
 

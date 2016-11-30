@@ -9,7 +9,7 @@ from ducktest.version import VERSION
 class DucktestConfiguration(object):
     def __init__(
             self, own_path,
-            top_level_directory='',
+            top_level_directory=('',),
             test_directories=None,
             write_directories=None,
             ignore_parameter_names=('self', 'cls'),

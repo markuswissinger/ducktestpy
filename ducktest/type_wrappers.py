@@ -1,10 +1,10 @@
+import sys
 import types
 import unittest
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple, Container, Iterable, Mapping, defaultdict, OrderedDict
 
 import mock
-import sys
 from future.utils import iteritems
 from past.builtins import basestring
 
@@ -140,10 +140,8 @@ class MappingTypeProcessor(ConditionalTypeProcessor):
             try:
                 mapped_types.add((self._get_type(key), self._get_type(value)))
             except ValueError:
-                pass
-        if mapped_types:
-            return MappingTypeWrapper(own_type, frozenset(mapped_types))
-        return PlainTypeWrapper(own_type)
+                continue
+        return MappingTypeWrapper(own_type, frozenset(mapped_types))
 
 
 class ContainerTypeProcessor(ConditionalTypeProcessor):
@@ -167,9 +165,7 @@ class ContainerTypeProcessor(ConditionalTypeProcessor):
                 contained_types.update(self._get_type(contained))
             except ValueError:
                 continue
-        if contained_types:
-            return ContainerTypeWrapper(own_type, frozenset(contained_types))
-        return PlainTypeWrapper(own_type)
+        return ContainerTypeWrapper(own_type, frozenset(contained_types))
 
 
 class PlainTypeProcessor(Processor):
