@@ -5,7 +5,7 @@ from mock import Mock
 
 import ducktest
 
-from ducktest import run
+from ducktest.type_wrappers import run
 from ducktest.docstring_parser import DocstringWriter, read_file
 
 
