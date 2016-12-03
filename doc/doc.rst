@@ -224,18 +224,21 @@ notable (intended) behaviour
 
 -   ducktest does not write tags for NoneType or a plain mock.Mock (without _spec_class)
 
+-   empty container and mapping types are not printed, if there is a non-empty one: e.g. *list and list of int* is
+    printed as *list of int*
 
-TODO
-====
+TODO (unordered)
+================
 
-- Old style classes are not resolved
-- ducktest collects all types used in tests, even if they are sub- or supertypes of each other
+- create an ANY type, use with mock.create_autospec(ANY)
+- do not record types from tests that use *assertRaises*, since those might be wrong
+- resolve old style classes
+- do not print a type if a supertype is printed in the same tag
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
   create warnings in static type checkers. There seems to be no way to express this correctly in the sphinx docstring
   format
-- Useful but missing configuration options:
+- Useful unimplemented configuration options:
     - handle hand-written mocks
     - exclude subfolders from type writing
     - exclude subfolders from test execution
 - write not only docstrings but python stubs as well
-- try PEP 484 notation

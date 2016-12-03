@@ -75,3 +75,11 @@ def new_docstring(a):
 
 def no_docstring():
     return None
+
+
+def with_any(any):
+    """
+    :type any: ducktest.ducktypes.Any
+    :rtype: str
+    """
+    return 'any many mooh!'

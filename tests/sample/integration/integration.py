@@ -52,3 +52,7 @@ def new_docstring(a):
 
 def no_docstring():
     return None
+
+
+def with_any(any):
+    return 'any many mooh!'
