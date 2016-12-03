@@ -227,13 +227,15 @@ notable (intended) behaviour
 -   empty container and mapping types are not printed, if there is a non-empty one: e.g. *list and list of int* is
     printed as *list of int*
 
+-   the ducktype.Any type is just a Mock
+
 TODO (unordered)
 ================
 
-- create an ANY type, use with mock.create_autospec(ANY)
+- do not print a type if a supertype is printed in the same tag
+- let ducktype.Any replace all other types of a tag (effectively a superclass of any other class)
 - do not record types from tests that use *assertRaises*, since those might be wrong
 - resolve old style classes
-- do not print a type if a supertype is printed in the same tag
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
   create warnings in static type checkers. There seems to be no way to express this correctly in the sphinx docstring
   format
