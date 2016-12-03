@@ -8,7 +8,7 @@ import mock
 from future.utils import iteritems
 from past.builtins import basestring
 
-from ducktest import ducktypes
+from ducktest import ducktype
 
 CO_GENERATOR = 0x20
 
@@ -97,8 +97,8 @@ MappingTypeWrapper = namedtuple('MappingTypeWrapper', ['own_type', 'mapped_types
 
 
 def get_plain_type(parameter):
-    if issubclass(ducktypes.Any, type(parameter)):  # Any is only a subclass of Any
-        return ducktypes.Any
+    if isinstance(parameter, ducktype.Any):
+        return ducktype.Any
     if isinstance(parameter, mock.Mock):
         if parameter._spec_class:
             return parameter._spec_class

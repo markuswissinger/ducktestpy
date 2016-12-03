@@ -54,5 +54,6 @@ def no_docstring():
     return None
 
 
-def with_any(any):
+def with_any(some):
+    some.mooh()
     return 'any many mooh!'
