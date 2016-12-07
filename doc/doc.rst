@@ -227,13 +227,11 @@ notable (intended) behaviour
 -   empty container and mapping types are not printed, if there is a non-empty one: e.g. *list and list of int* is
     printed as *list of int*
 
--   the ducktype.Any type is just a Mock
-
 TODO (unordered)
 ================
 
 - do not print a type if a supertype is printed in the same tag
-- let ducktype.Any replace all other types of a tag (effectively a superclass of any other class)
+- introduce an *any* type, or translate plain mocks to typing.any. Remove all other types in a tag, when *any* is present.
 - do not record types from tests that use *assertRaises*, since those might be wrong
 - resolve old style classes
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
