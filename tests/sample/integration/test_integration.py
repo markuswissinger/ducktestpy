@@ -2,11 +2,10 @@ import unittest
 
 from hamcrest import assert_that, is_
 from mock import Mock, create_autospec
-from ducktest.ducktype import Any
 
 from tests.sample.integration.integration import multi_line_docstring_example, no_docstring, new_docstring, \
     single_line_docstring, two_line_docstring, list_example, single_result_line, mock_example, non_builtin_example, \
-    generator_example, with_any
+    generator_example
 from tests.sample.integration.stuff import Some, Other
 
 
@@ -50,6 +49,3 @@ class TestIntegration(unittest.TestCase):
     def test_generator(self):
         a = [number for number in generator_example()]
         assert_that(a, is_([1]))
-
-    def test_any(self):
-        with_any(Any())
