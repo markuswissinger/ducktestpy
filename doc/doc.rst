@@ -231,7 +231,7 @@ TODO (unordered)
 ================
 
 - do not print a type if a supertype is printed in the same tag
-- introduce an *any* type, or translate plain mocks to typing.any. Remove all other types in a tag, when *any* is present.
+- introduce an *any* type...
 - do not record types from tests that use *assertRaises*, since those might be wrong
 - resolve old style classes
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will

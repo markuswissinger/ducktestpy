@@ -24,10 +24,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = str(f.read())
 
 with open(path.join(here, 'ducktest', 'version.py')) as f:
-    try:
-        version = re.match("VERSION = '([^\']+)'", f.readline()).group(1)
-    except:
-        version = '0'
+    first_line = f.readline().decode()
+    version = re.match("VERSION = '([^\']+)'", first_line).group(1)
 
 setup(
     name='ducktest',
