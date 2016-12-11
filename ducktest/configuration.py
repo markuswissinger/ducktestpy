@@ -34,6 +34,7 @@ class DucktestConfiguration(object):
 
     def run(self):
         print('ducktest {}'.format(VERSION))
+
         no_test_failed, call_types, return_types = run(self)
 
         if no_test_failed:

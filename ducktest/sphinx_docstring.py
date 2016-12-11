@@ -49,7 +49,6 @@ def parse_docstrings(lines):
     first_line = None
     wrapped_iterator = WrappedIterator(lines)
     for token_type, text, (srow, scol), (erow, ecol), l in tokenize.generate_tokens(wrapped_iterator.next_line):
-        # print ','.join([str(item) for item in [token_type, text, srow, scol]])
         if state == IN_FUNCTION and prev_token_type == tokenize.INDENT:
             if token_type == tokenize.STRING:
                 docstring_lines = inspect.cleandoc(text).splitlines()
