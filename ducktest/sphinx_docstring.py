@@ -91,10 +91,7 @@ def module_name(clazz):
 
 
 def full_name(a_type):
-    # try:
     return module_name(a_type) + a_type.__name__
-    # except AttributeError:
-    #    return ''
 
 
 def handle_mapper(a_type):
@@ -152,11 +149,8 @@ class DocstringWriter(object):
 
     def write_all(self):
         for file_path in interesting_file_paths(self.write_directories):
-            # print file_path
             lines = read_file(file_path)
-            # print lines
             parsed_docstrings = parse_docstrings(lines)
-            # print parsed_docstrings
             for def_line_number in sorted(parsed_docstrings.keys(), reverse=True):
                 call_types = self.call_types.call_types(file_path, def_line_number)
                 to_add = []
@@ -183,9 +177,7 @@ class DocstringWriter(object):
                 else:
                     new_docstring = []
                 formatted = [' ' * scol + line + '\n' for line in new_docstring]
-                # print formatted
                 lines = lines[:srow - 1] + formatted + lines[srow + len(doclines) - 1:]
-            # print lines
             write_file(file_path, lines)
 
 
