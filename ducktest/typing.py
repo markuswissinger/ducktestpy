@@ -5,8 +5,8 @@ from abc import abstractmethod, ABCMeta
 from collections import namedtuple, Container, Iterable, Mapping, defaultdict, OrderedDict
 
 import mock
+import six
 from future.utils import iteritems
-from past.builtins import basestring
 
 CO_GENERATOR = 0x20
 
@@ -153,7 +153,7 @@ class ContainerTypeProcessor(ConditionalTypeProcessor):
         return all([
             isinstance(container, Container),
             isinstance(container, Iterable),
-            not isinstance(container, basestring),
+            not isinstance(container, six.string_types),
             not isinstance(container, Mapping)
         ])
 
