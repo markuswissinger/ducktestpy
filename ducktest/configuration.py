@@ -34,7 +34,7 @@ class DucktestConfiguration(object):
 
     def run(self):
         print('ducktest {}'.format(VERSION))
-        call_types, return_types = run(self)
+        no_test_failed, call_types, return_types = run(self)
 
-        if call_types:
+        if no_test_failed:
             DocstringWriter(call_types, return_types, self.write_docstrings_in_directories).write_all()

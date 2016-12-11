@@ -1,20 +1,12 @@
+import os
 import unittest
 
 from hamcrest import assert_that, is_
 from mock import Mock
 
 import ducktest
-
-from ducktest.typing import run
+from ducktest.configuration import DucktestConfiguration
 from ducktest.sphinx_docstring import DocstringWriter, read_file
-
-
-class ConfigMock(object):
-    def __init__(self):
-        self.top_level_directory = '/home/markus/git/ducktestpy'
-        self.discover_tests_in_directories = ['/home/markus/git/ducktestpy/tests/sample/integration']
-        self.write_docstrings_in_directories = ['/home/markus/git/ducktestpy/tests/sample/integration']
-        self.ignore_call_parameter_names = ['self', 'cls']
 
 
 class TestIntegration(unittest.TestCase):
@@ -23,21 +15,24 @@ class TestIntegration(unittest.TestCase):
         self.write = Mock()
         ducktest.sphinx_docstring.write_file = self.write
 
+        self.path = os.path.dirname(__file__)
+
     def get_lines(self):
         for call in self.write.call_args_list:
             name, lines = call[0]
-            if name == '/home/markus/git/ducktestpy/tests/sample/integration/integration.py':
+            if name == os.path.join(self.path, 'sample', 'integration', 'integration.py'):
                 return lines
 
     def test_integration(self):
-        config_mock = ConfigMock()
-        call_types, return_types = run(config_mock)
-
-        DocstringWriter(call_types, return_types, config_mock.write_docstrings_in_directories).write_all()
+        DucktestConfiguration(
+            self.path,
+            test_directories=['tests/sample/integration'.split('/')],
+            write_directories=['tests/sample/integration'.split('/')],
+        ).run()
 
         lines = self.get_lines()
 
-        expected = read_file('/home/markus/git/ducktestpy/tests/sample/integration/expectation.py')
+        expected = read_file(os.path.join(self.path, 'sample', 'integration', 'expectation.py'))
 
         assert_that(lines, is_(expected))
 

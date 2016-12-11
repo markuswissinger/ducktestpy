@@ -298,11 +298,11 @@ class Tracer(object):
 
 
 class DuckTestResult(unittest.runner.TextTestResult):
-    overall_success = True
+    no_test_failed = True
 
     @classmethod
     def remember_failure(cls):
-        cls.overall_success = False
+        cls.no_test_failed = False
 
     def addError(self, test, err):
         self.remember_failure()
@@ -327,5 +327,4 @@ def run(conf):
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         tracer.runcall(runner.run, suite)
 
-    if DuckTestResult.overall_success:
-        return call_types, return_types
+    return DuckTestResult.no_test_failed, call_types, return_types
