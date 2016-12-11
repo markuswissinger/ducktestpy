@@ -5,8 +5,8 @@ from mock import Mock
 
 import ducktest
 
-from ducktest.type_wrappers import run
-from ducktest.docstring_parser import DocstringWriter, read_file
+from ducktest.typing import run
+from ducktest.sphinx_docstring import DocstringWriter, read_file
 
 
 class ConfigMock(object):
@@ -19,9 +19,9 @@ class ConfigMock(object):
 
 class TestIntegration(unittest.TestCase):
     def setUp(self):
-        self.old_write = ducktest.docstring_parser.write_file
+        self.old_write = ducktest.sphinx_docstring.write_file
         self.write = Mock()
-        ducktest.docstring_parser.write_file = self.write
+        ducktest.sphinx_docstring.write_file = self.write
 
     def get_lines(self):
         for call in self.write.call_args_list:
@@ -51,4 +51,4 @@ class TestIntegration(unittest.TestCase):
                 raise e
 
     def tearDown(self):
-        ducktest.docstring_parser.write_file = self.old_write
+        ducktest.sphinx_docstring.write_file = self.old_write

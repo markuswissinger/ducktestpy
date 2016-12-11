@@ -215,9 +215,6 @@ class ReturnTypeStorer(Processor):
             self.return_types.store(self.get_type(value), frame)
 
 
-FunctionParameters = namedtuple('FunctionParameters', ['line_number', 'types'])
-
-
 class OrderedDefaultDict(OrderedDict):
     def __init__(self, default_factory, *args, **kwds):
         super(OrderedDefaultDict, self).__init__(*args, **kwds)
@@ -316,14 +313,6 @@ class DuckTestResult(unittest.runner.TextTestResult):
     def addFailure(self, test, err):
         self.remember_failure()
         super(DuckTestResult, self).addFailure(test, err)
-
-    def addExpectedFailure(self, test, err):
-        self.remember_failure()
-        super(DuckTestResult, self).addExpectedFailure(test, err)
-
-    def addUnexpectedSuccess(self, test):
-        self.remember_failure()
-        super(DuckTestResult, self).addUnexpectedSuccess(test)
 
 
 def run(conf):

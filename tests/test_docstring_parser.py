@@ -3,7 +3,7 @@ import unittest
 from hamcrest import assert_that, is_
 from os import path
 
-from ducktest.docstring_parser import read_file, parse_docstrings
+from ducktest.sphinx_docstring import read_file, parse_docstrings
 
 
 class TestParser(unittest.TestCase):

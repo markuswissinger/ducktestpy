@@ -15,14 +15,9 @@ limitations under the License.
 """
 import inspect
 import os
-import re
 import tokenize
-from abc import abstractmethod, ABCMeta
 
-from mock import Mock
-
-from ducktest.type_wrappers import run
-from ducktest.type_wrappers import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
+from ducktest.typing import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
 
 
 class WrappedIterator(object):
@@ -150,7 +145,7 @@ def write_file(file_name, lines):
 
 class DocstringWriter(object):
     def __init__(self, frame_processors, write_directories):
-        """:type frame_processors: ducktest.type_wrappers.FrameProcessors"""
+        """:type frame_processors: ducktest.typing.FrameProcessors"""
         self.write_directories = write_directories
         self.call_types = frame_processors.call_types
         self.return_types = frame_processors.return_types

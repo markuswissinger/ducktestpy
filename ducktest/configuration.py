@@ -1,8 +1,8 @@
 import os
 
-from ducktest.docstring_parser import DocstringWriter
+from ducktest.sphinx_docstring import DocstringWriter
 
-from ducktest.type_wrappers import run
+from ducktest.typing import run
 from ducktest.version import VERSION
 
 
