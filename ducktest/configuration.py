@@ -1,7 +1,6 @@
 import os
 
 from ducktest.sphinx_docstring import DocstringWriter
-
 from ducktest.typing import run
 from ducktest.version import VERSION
 
@@ -35,7 +34,7 @@ class DucktestConfiguration(object):
 
     def run(self):
         print('ducktest {}'.format(VERSION))
-        typing_debugger, processors = run(self)
+        call_types, return_types = run(self)
 
-        if typing_debugger:
-            DocstringWriter(processors, self.write_docstrings_in_directories).write_all()
+        if call_types:
+            DocstringWriter(call_types, return_types, self.write_docstrings_in_directories).write_all()

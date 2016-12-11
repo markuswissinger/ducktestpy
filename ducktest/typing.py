@@ -251,32 +251,30 @@ class ReturnTypesRepository(object):
         return self._dict[file_name][line_number]
 
 
-class FrameProcessors(object):
-    def __init__(self, configuration):
-        """:type configuration: ducktest.config_reader.Configuration"""
-        self.call_types = CallTypesRepository()
-        self.return_types = ReturnTypesRepository()
+def frame_processors(configuration, call_types, return_types):
+    """:type configuration: ducktest.config_reader.Configuration"""
+    typer = IdleProcessor()
+    chain(
+        typer,
+        MappingTypeProcessor(typer),
+        ContainerTypeProcessor(typer),
+        PlainTypeProcessor(),
+    )
 
-        typer = IdleProcessor()
-        chain(
-            typer,
-            MappingTypeProcessor(typer),
-            ContainerTypeProcessor(typer),
-            PlainTypeProcessor(),
-        )
+    call_frame_processor = chain(
+        DirectoriesValidater(configuration.write_docstrings_in_directories),
+        CallVariableSplitter(),
+        NameValidater(configuration.ignore_call_parameter_names),
+        CallTypeStorer(call_types, typer)
+    )
 
-        self.call_frame_processor = chain(
-            DirectoriesValidater(configuration.write_docstrings_in_directories),
-            CallVariableSplitter(),
-            NameValidater(configuration.ignore_call_parameter_names),
-            CallTypeStorer(self.call_types, typer)
-        )
+    return_frame_processor = chain(
+        DirectoriesValidater(configuration.write_docstrings_in_directories),
+        GeneratorTypeProcessor(return_types),
+        ReturnTypeStorer(return_types, typer),
+    )
 
-        self.return_frame_processor = chain(
-            DirectoriesValidater(configuration.write_docstrings_in_directories),
-            GeneratorTypeProcessor(self.return_types),
-            ReturnTypeStorer(self.return_types, typer),
-        )
+    return call_frame_processor, return_frame_processor
 
 
 class Tracer(object):
@@ -316,12 +314,18 @@ class DuckTestResult(unittest.runner.TextTestResult):
 
 
 def run(conf):
-    processors = FrameProcessors(conf)
-    tracer = Tracer(conf.top_level_directory, processors.call_frame_processor, processors.return_frame_processor)
+    call_types = CallTypesRepository()
+    return_types = ReturnTypesRepository()
+
+    call_frame_processor, return_frame_processor = frame_processors(conf, call_types, return_types)
+
+    tracer = Tracer(conf.top_level_directory, call_frame_processor, return_frame_processor)
     loader = unittest.TestLoader()
     runner = unittest.TextTestRunner(failfast=True, resultclass=DuckTestResult)
+
     for test_directory in conf.discover_tests_in_directories:
         suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
         tracer.runcall(runner.run, suite)
+
     if DuckTestResult.overall_success:
-        return tracer, processors
+        return call_types, return_types

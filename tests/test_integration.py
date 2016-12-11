@@ -31,9 +31,9 @@ class TestIntegration(unittest.TestCase):
 
     def test_integration(self):
         config_mock = ConfigMock()
-        typing_debugger, processors = run(config_mock)
+        call_types, return_types = run(config_mock)
 
-        DocstringWriter(processors, config_mock.write_docstrings_in_directories).write_all()
+        DocstringWriter(call_types, return_types, config_mock.write_docstrings_in_directories).write_all()
 
         lines = self.get_lines()
 

@@ -144,11 +144,11 @@ def write_file(file_name, lines):
 
 
 class DocstringWriter(object):
-    def __init__(self, frame_processors, write_directories):
+    def __init__(self, call_types, return_types, write_directories):
         """:type frame_processors: ducktest.typing.FrameProcessors"""
         self.write_directories = write_directories
-        self.call_types = frame_processors.call_types
-        self.return_types = frame_processors.return_types
+        self.call_types = call_types
+        self.return_types = return_types
 
     def write_all(self):
         for file_path in interesting_file_paths(self.write_directories):
