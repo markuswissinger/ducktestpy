@@ -264,7 +264,7 @@ def frame_processors(configuration, call_types, return_types):
     call_frame_processor = chain(
         DirectoriesValidater(configuration.write_docstrings_in_directories),
         CallVariableSplitter(),
-        NameValidater(configuration.ignore_call_parameter_names),
+        # NameValidater(configuration.ignore_call_parameter_names),
         CallTypeStorer(call_types, typer)
     )
 

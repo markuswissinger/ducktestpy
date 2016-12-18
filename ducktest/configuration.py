@@ -1,6 +1,6 @@
 import os
 
-from ducktest.sphinx_docstring import DocstringWriter
+from ducktest.stub_file import StubFileWriter
 from ducktest.typing import run
 from ducktest.version import VERSION
 
@@ -12,6 +12,7 @@ class DucktestConfiguration(object):
             test_directories=None,
             write_directories=None,
             ignore_parameter_names=('self', 'cls'),
+            writer_class=StubFileWriter,
 
     ):
         """
@@ -22,6 +23,7 @@ class DucktestConfiguration(object):
         self.discover_tests_in_directories = self._dirlist(test_directories)
         self.write_docstrings_in_directories = self._dirlist(write_directories)
         self.ignore_call_parameter_names = ignore_parameter_names
+        self.writer_class = writer_class
 
     def _in_full(self, path_tuple):
         return os.path.join(self._path, *path_tuple)
@@ -38,4 +40,4 @@ class DucktestConfiguration(object):
         no_test_failed, call_types, return_types = run(self)
 
         if no_test_failed:
-            DocstringWriter(call_types, return_types, self.write_docstrings_in_directories).write_all()
+            self.writer_class(call_types, return_types, self).write_all()
