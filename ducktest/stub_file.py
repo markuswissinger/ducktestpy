@@ -130,9 +130,11 @@ class StubFileWriter(object):
                 for name in called.keys():
                     if name in self.ignore_call_parameter_names:
                         called[name] = set([])
-                stub_position.add_call(called)
-                stub_position.add_return(self.return_types.return_types(file_path, stub_line_number))
-                stub_file_lines.append(stub_position)
+                returned = self.return_types.return_types(file_path, stub_line_number)
+                if called or returned or isinstance(stub_position, ClassStubLine):
+                    stub_position.add_call(called)
+                    stub_position.add_return(returned)
+                    stub_file_lines.append(stub_position)
 
             for first, second in zip(stub_file_lines[:-1], stub_file_lines[1:]):
                 if first.indent < second.indent:
@@ -141,4 +143,4 @@ class StubFileWriter(object):
             with open(file_path + 'i', 'w') as f:
                 f.writelines([str(line) for line in stub_file_lines])
 
-# TODO what about untested methods
+                # TODO what about untested methods -> just do not print stub
