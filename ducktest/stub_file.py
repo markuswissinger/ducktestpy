@@ -142,5 +142,3 @@ class StubFileWriter(object):
 
             with open(file_path + 'i', 'w') as f:
                 f.writelines([str(line) for line in stub_file_lines])
-
-                # TODO what about untested methods -> just do not print stub
