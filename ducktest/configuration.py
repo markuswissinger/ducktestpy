@@ -1,6 +1,6 @@
 import os
 
-from ducktest.stub_file import StubFileWriter
+from ducktest.sphinx_docstring import DocstringWriter
 from ducktest.typing import run
 from ducktest.version import VERSION
 
@@ -12,7 +12,7 @@ class DucktestConfiguration(object):
             test_directories=None,
             write_directories=None,
             ignore_parameter_names=('self', 'cls'),
-            writer_class=StubFileWriter,
+            writer_class=DocstringWriter,
 
     ):
         """

@@ -142,6 +142,7 @@ def write_file(file_name, lines):
 class DocstringWriter(object):
     def __init__(self, call_types, return_types, configuration):
         self.write_directories = configuration.write_docstrings_in_directories
+        self.ignore_call_parameter_names = configuration.ignore_call_parameter_names
         self.call_types = call_types
         self.return_types = return_types
 
@@ -153,6 +154,8 @@ class DocstringWriter(object):
                 call_types = self.call_types.call_types(file_path, def_line_number)
                 to_add = []
                 for name in call_types:
+                    if name in self.ignore_call_parameter_names:
+                        continue
                     types = get_type_names(call_types[name])
                     if types:
                         to_add.append(':type {}: {}'.format(name, types))

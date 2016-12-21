@@ -28,9 +28,9 @@ class DefStubLine(object):
             if len(types) == 0:
                 entries.append(name)
             elif len(types) == 1:
-                entries.append(name + ': ' + types.pop().own_type.__name__)
+                entries.append(name + ": '" + types.pop().own_type.__name__ + "'")
             else:
-                entries.append(name + ': ' + 'Union[{}]'.format(
+                entries.append(name + ': ' + "'Union[{}]'".format(
                     ', '.join(sorted([entry.own_type.__name__ for entry in types]))
                 ))
         self.call_signature = ', '.join(entries)
@@ -45,7 +45,7 @@ class DefStubLine(object):
                 ', '.join(sorted([entry.own_type.__name__ for entry in return_types])))
 
     def __str__(self):
-        return '{indent}def {name}({call_signature}) -> {return_signature}:{ellipsis}\n'.format(
+        return "{indent}def {name}({call_signature}) -> {return_signature}:{ellipsis}\n".format(
             indent=' ' * self.indent,
             name=self.name,
             call_signature=self.call_signature,
@@ -85,8 +85,28 @@ class ClassStubLine(object):
         return '{}class {}{}{}\n'.format(self.indent * ' ', self.name, tokens, self.ellipsis())
 
 
+class ImportStubLine(object):
+    indent = 0
+
+    def __init__(self, text):
+        self.items = [text]
+
+    def append(self, token_type, text):
+        self.items.append(text)
+
+    def add_call(self, call_types):
+        pass
+
+    def add_return(self, return_types):
+        pass
+
+    def __str__(self):
+        return ' '.join(self.items)
+
+
 NOT_IN_LINE = 0
 INLINE = 1
+IN_IMPORT = 2
 
 
 def parse_source(lines):
@@ -100,7 +120,10 @@ def parse_source(lines):
     for token_type, text, (srow, scol), (erow, ecol), l in tokenize.generate_tokens(wrapped_iterator.next_line):
         if token_type == tokenize.INDENT and state == INLINE:
             state = NOT_IN_LINE
-        if state == INLINE:
+        if token_type == tokenize.NEWLINE and state == IN_IMPORT:
+            stub.append(token_type, text)
+            state = NOT_IN_LINE
+        if state == INLINE or state == IN_IMPORT:
             stub.append(token_type, text)
         if text == 'def' and token_type == tokenize.NAME:
             state = INLINE
@@ -109,6 +132,10 @@ def parse_source(lines):
         if text == 'class' and token_type == tokenize.NAME:
             state = INLINE
             stub = ClassStubLine(scol)
+            stubs[srow] = stub
+        if (text == 'from' or text == 'import') and scol == 0:
+            state = IN_IMPORT
+            stub = ImportStubLine(text)
             stubs[srow] = stub
     return stubs
 
@@ -131,10 +158,13 @@ class StubFileWriter(object):
                     if name in self.ignore_call_parameter_names:
                         called[name] = set([])
                 returned = self.return_types.return_types(file_path, stub_line_number)
-                if called or returned or isinstance(stub_position, ClassStubLine):
+                if called or returned or isinstance(stub_position, ClassStubLine) or isinstance(stub_position,
+                                                                                                ImportStubLine):
                     stub_position.add_call(called)
                     stub_position.add_return(returned)
                     stub_file_lines.append(stub_position)
+
+            print(stub_file_lines)
 
             for first, second in zip(stub_file_lines[:-1], stub_file_lines[1:]):
                 if first.indent < second.indent:
