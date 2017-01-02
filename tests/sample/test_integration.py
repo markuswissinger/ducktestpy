@@ -43,7 +43,10 @@ class TestIntegration(unittest.TestCase):
 
         assert_that(received, is_same_list_of_lines(expected))
 
-    def test_integration(self):
+    def test_dictionary(self):
         self.assert_sphinx_docstring_written_in_folder('dictionary')
+
+    def test_supertypes(self):
+        self.assert_sphinx_docstring_written_in_folder('supertypes')
 
 

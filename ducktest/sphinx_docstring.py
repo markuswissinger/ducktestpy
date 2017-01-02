@@ -17,7 +17,7 @@ import inspect
 import os
 import tokenize
 
-from ducktest.typing import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
+from ducktest.base import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
 
 
 class WrappedIterator(object):

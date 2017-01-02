@@ -8,6 +8,9 @@ import mock
 import six
 from future.utils import iteritems
 
+from ducktest.base import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper, Processor, chain
+from ducktest.supertypes import remove_subtypes
+
 CO_GENERATOR = 0x20
 
 
@@ -35,29 +38,6 @@ def get_local_variable(frame, variable_name):
     return frame.f_locals[variable_name]
 
 
-class Processor(object):
-    __metaclass__ = ABCMeta
-
-    def __init__(self):
-        self.next_processor = None
-
-    @abstractmethod
-    def process(self, *args, **kwargs):
-        pass
-
-
-def last_after(processor):
-    while processor.next_processor:
-        processor = processor.next_processor
-    return processor
-
-
-def chain(*processors):
-    for first, second in zip(processors[:-1], processors[1:]):
-        last_after(first).next_processor = second
-    return processors[0]
-
-
 class DirectoriesValidater(Processor):
     def __init__(self, included_directories):
         super(DirectoriesValidater, self).__init__()
@@ -77,21 +57,6 @@ class CallVariableSplitter(Processor):
             except KeyError:
                 continue
             self.next_processor.process(value, name, frame)
-
-
-class NameValidater(Processor):
-    def __init__(self, excluded_names):
-        super(NameValidater, self).__init__()
-        self.excluded_names = excluded_names
-
-    def process(self, value, name, frame):
-        if name not in self.excluded_names:
-            self.next_processor.process(value, name, frame)
-
-
-PlainTypeWrapper = namedtuple('PlainTypeWrapper', 'own_type')
-ContainerTypeWrapper = namedtuple('ContainerTypeWrapper', ['own_type', 'contained_types'])
-MappingTypeWrapper = namedtuple('MappingTypeWrapper', ['own_type', 'mapped_types'])
 
 
 def get_plain_type(parameter):
@@ -237,7 +202,11 @@ class CallTypesRepository(object):
         self._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(a_type)
 
     def call_types(self, file_name, line_number):
-        return self._dict[file_name][line_number]
+        calltypes = self._dict[file_name][line_number]
+        result = OrderedDict()
+        for name, value in iteritems(calltypes):
+            result[name] = remove_subtypes(value)
+        return result
 
 
 class ReturnTypesRepository(object):
@@ -248,7 +217,9 @@ class ReturnTypesRepository(object):
         self._dict[get_file_name(frame)][get_first_line_number(frame)].update(a_type)
 
     def return_types(self, file_name, line_number):
-        return self._dict[file_name][line_number]
+        returntypes= self._dict[file_name][line_number]
+        result=remove_subtypes(returntypes)
+        return result
 
 
 def frame_processors(configuration, call_types, return_types):
@@ -264,7 +235,6 @@ def frame_processors(configuration, call_types, return_types):
     call_frame_processor = chain(
         DirectoriesValidater(configuration.write_docstrings_in_directories),
         CallVariableSplitter(),
-        # NameValidater(configuration.ignore_call_parameter_names),
         CallTypeStorer(call_types, typer)
     )
 
