@@ -25,18 +25,35 @@ def is_container_subtype(a, b):
            all((is_subtype_of_any(a_contained, b.contained_types) for a_contained in a.contained_types))
 
 
-def keys(mapping_type_wrapper):
+def key_sets(mapping_type_wrapper):
     return (mapped[0] for mapped in mapping_type_wrapper.mapped_types)
 
 
-def values(mapping_type_wrapper):
+def value_sets(mapping_type_wrapper):
     return (mapped[1] for mapped in mapping_type_wrapper.mapped_types)
 
 
+def each_is_subtype_of_some_in(key_set_a, key_set_b):
+    return all((is_subtype_of_any(a_key, key_set_b) for a_key in key_set_a))
+
+
+def some(a_sets, b_sets):
+    a_sets = list(a_sets)
+    b_sets = list(b_sets)
+    if a_sets and not b_sets:
+        return False
+    for a_set in a_sets:
+        for b_set in b_sets:
+            if not each_is_subtype_of_some_in(a_set, b_set):
+                return False
+    return True
+
+
 def is_mapping_subtype(a, b):
-    return both_are_instances(a, b, MappingTypeWrapper) and issubclass(a.own_type, b.own_type) \
-           and all((is_subtype_of_any(a_key, keys(b)) for a_key in keys(a))) \
-           and all((is_subtype_of_any(a_value, values(b)) for a_value in values(a)))
+    return both_are_instances(a, b, MappingTypeWrapper) \
+           and issubclass(a.own_type, b.own_type) \
+           and some(key_sets(a), key_sets(b)) \
+           and some(value_sets(a), value_sets(b))
 
 
 is_subtype_functions.extend([

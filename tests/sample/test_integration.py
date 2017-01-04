@@ -42,11 +42,10 @@ class TestIntegration(unittest.TestCase):
         expected = read_file(os.path.join(PATH, 'sample', name, 'expected_sphinx.py'))
 
         assert_that(received, is_same_list_of_lines(expected))
+        assert_that(len(received), is_(len(expected)))
 
     def test_dictionary(self):
         self.assert_sphinx_docstring_written_in_folder('dictionary')
 
     def test_supertypes(self):
         self.assert_sphinx_docstring_written_in_folder('supertypes')
-
-

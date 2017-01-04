@@ -1,8 +1,10 @@
 import unittest
 from collections import Iterable, OrderedDict
 
+from hamcrest import assert_that, is_
+
 from ducktest.base import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
-from ducktest.supertypes import is_subtype
+from ducktest.supertypes import is_subtype, remove_subtypes
 
 
 class A(object):
@@ -61,11 +63,16 @@ class TestIsSubtype(unittest.TestCase):
 DICT = MappingTypeWrapper(dict, frozenset())
 ORDERED_DICT = MappingTypeWrapper(OrderedDict, frozenset())
 
-MAP_A_INT = MappingTypeWrapper(dict, frozenset([(PLAIN_A, PLAIN_INT)]))
-MAP_B_INT = MappingTypeWrapper(dict, frozenset([(PLAIN_B, PLAIN_INT)]))
 
-MAP_INT_A = MappingTypeWrapper(dict, frozenset([(PLAIN_INT, PLAIN_A)]))
-MAP_INT_B = MappingTypeWrapper(dict, frozenset([(PLAIN_INT, PLAIN_B)]))
+def get_mapping_wrapper(own, key, value):
+    return MappingTypeWrapper(own, frozenset([(frozenset([key]), frozenset([value]))]))
+
+
+MAP_A_INT = get_mapping_wrapper(dict, PLAIN_A, PLAIN_INT)
+MAP_B_INT = get_mapping_wrapper(dict, PLAIN_B, PLAIN_INT)
+
+MAP_INT_A = get_mapping_wrapper(dict, PLAIN_INT, PLAIN_A)
+MAP_INT_B = get_mapping_wrapper(dict, PLAIN_INT, PLAIN_B)
 
 
 class C(object):
@@ -79,8 +86,8 @@ class D(C):
 PLAIN_C = PlainTypeWrapper(C)
 PLAIN_D = PlainTypeWrapper(D)
 
-MAP_A_C = MappingTypeWrapper(dict, frozenset([(PLAIN_A, PLAIN_C)]))
-MAP_B_D = MappingTypeWrapper(dict, frozenset([(PLAIN_B, PLAIN_D)]))
+MAP_A_C = get_mapping_wrapper(dict, PLAIN_A, PLAIN_C)
+MAP_B_D = get_mapping_wrapper(dict, PLAIN_B, PLAIN_D)
 
 
 class TestIsSubtypeMappings(unittest.TestCase):
@@ -103,3 +110,24 @@ class TestIsSubtypeMappings(unittest.TestCase):
     def test_empty(self):
         assert is_subtype(DICT, MAP_A_C)
         assert not is_subtype(MAP_A_C, DICT)
+
+
+class TestRemoveSubtypes(unittest.TestCase):
+    def test_remove(self):
+        wrappers = {MAP_A_INT, MAP_B_INT}
+        assert_that(remove_subtypes(wrappers), is_({MAP_A_INT}))
+
+    def test_real(self):
+        wrappers = {
+            MappingTypeWrapper(dict, frozenset([
+                (frozenset([PlainTypeWrapper(int)]), frozenset([PlainTypeWrapper(A)]))
+            ])),
+            MappingTypeWrapper(dict, frozenset([
+                (frozenset([PlainTypeWrapper(int)]), frozenset([PlainTypeWrapper(B)]))
+            ])),
+        }
+        assert_that(remove_subtypes(wrappers), is_({
+            MappingTypeWrapper(dict, frozenset([
+                (frozenset([PlainTypeWrapper(int)]), frozenset([PlainTypeWrapper(A)]))
+            ])),
+        }))
