@@ -7,4 +7,4 @@ class B(A):
 
 
 def some(a):
-    return a
+    return [a]
