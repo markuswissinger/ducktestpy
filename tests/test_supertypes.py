@@ -64,15 +64,19 @@ DICT = MappingTypeWrapper(dict, frozenset())
 ORDERED_DICT = MappingTypeWrapper(OrderedDict, frozenset())
 
 
-def get_mapping_wrapper(own, key, value):
+def get_mapping_wrapper_b(own, key, value):
     return MappingTypeWrapper(own, frozenset([(frozenset([key]), frozenset([value]))]))
 
 
-MAP_A_INT = get_mapping_wrapper(dict, PLAIN_A, PLAIN_INT)
-MAP_B_INT = get_mapping_wrapper(dict, PLAIN_B, PLAIN_INT)
+def get_mapping_wrapper(own, keys, values):
+    return MappingTypeWrapper(own, frozenset([(frozenset(keys), frozenset(values))]))
 
-MAP_INT_A = get_mapping_wrapper(dict, PLAIN_INT, PLAIN_A)
-MAP_INT_B = get_mapping_wrapper(dict, PLAIN_INT, PLAIN_B)
+
+MAP_A_INT = get_mapping_wrapper(dict, [PLAIN_A], [PLAIN_INT])
+MAP_B_INT = get_mapping_wrapper(dict, [PLAIN_B], [PLAIN_INT])
+
+MAP_INT_A = get_mapping_wrapper(dict, [PLAIN_INT], [PLAIN_A])
+MAP_INT_B = get_mapping_wrapper(dict, [PLAIN_INT], [PLAIN_B])
 
 
 class C(object):
@@ -86,8 +90,11 @@ class D(C):
 PLAIN_C = PlainTypeWrapper(C)
 PLAIN_D = PlainTypeWrapper(D)
 
-MAP_A_C = get_mapping_wrapper(dict, PLAIN_A, PLAIN_C)
-MAP_B_D = get_mapping_wrapper(dict, PLAIN_B, PLAIN_D)
+MAP_A_C = get_mapping_wrapper(dict, [PLAIN_A], [PLAIN_C])
+MAP_B_D = get_mapping_wrapper(dict, [PLAIN_B], [PLAIN_D])
+
+MULTI_MAP_AC = get_mapping_wrapper(dict, [PLAIN_A, PLAIN_C], [PLAIN_INT])
+MULTI_MAP_BC = get_mapping_wrapper(dict, [PLAIN_B, PLAIN_C], [PLAIN_INT])
 
 
 class TestIsSubtypeMappings(unittest.TestCase):
@@ -110,6 +117,10 @@ class TestIsSubtypeMappings(unittest.TestCase):
     def test_empty(self):
         assert is_subtype(DICT, MAP_A_C)
         assert not is_subtype(MAP_A_C, DICT)
+
+    def test_multi_map(self):
+        assert is_subtype(MULTI_MAP_BC, MULTI_MAP_AC)
+        assert not is_subtype(MULTI_MAP_AC, MULTI_MAP_BC)
 
 
 class TestRemoveSubtypes(unittest.TestCase):

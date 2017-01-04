@@ -37,23 +37,22 @@ def each_is_subtype_of_some_in(key_set_a, key_set_b):
     return all((is_subtype_of_any(a_key, key_set_b) for a_key in key_set_a))
 
 
-def some(a_sets, b_sets):
-    a_sets = list(a_sets)
-    b_sets = list(b_sets)
-    if a_sets and not b_sets:
-        return False
+def all_compatible(a_sets, b_sets):
+    return_value = True
     for a_set in a_sets:
+        return_value = False
         for b_set in b_sets:
             if not each_is_subtype_of_some_in(a_set, b_set):
                 return False
-    return True
+            return_value = True
+    return return_value
 
 
 def is_mapping_subtype(a, b):
     return both_are_instances(a, b, MappingTypeWrapper) \
            and issubclass(a.own_type, b.own_type) \
-           and some(key_sets(a), key_sets(b)) \
-           and some(value_sets(a), value_sets(b))
+           and all_compatible(key_sets(a), key_sets(b)) \
+           and all_compatible(value_sets(a), value_sets(b))
 
 
 is_subtype_functions.extend([
