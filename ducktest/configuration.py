@@ -44,18 +44,17 @@ class DucktestConfiguration(object):
         call_frame_processor, return_frame_processor = frame_processors(self, call_types, return_types)
         tracer = Tracer(self.top_level_directory, call_frame_processor, return_frame_processor)
 
-        no_test_failed = True
         for test_directory in self.discover_tests_in_directories:
             suite = self.test_loader.discover(test_directory, top_level_dir=self.top_level_directory)
             result = tracer.runcall(self.test_runner.run, suite)
-            no_test_failed = no_test_failed and not result.errors and not result.failures
+            if result.errors or result.failures:
+                raise AssertionError('ducktest run aborted on test failure')
 
-        return no_test_failed, call_types, return_types
+        return call_types, return_types
 
     def run(self):
         print('ducktest {}'.format(VERSION))
 
-        no_test_failed, call_types, return_types = self.trace_tests()
+        call_types, return_types = self.trace_tests()
 
-        if no_test_failed:
-            self.writer_class(call_types, return_types, self).write_all()
+        self.writer_class(call_types, return_types, self).write_all()
