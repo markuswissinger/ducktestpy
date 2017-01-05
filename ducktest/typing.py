@@ -217,8 +217,8 @@ class ReturnTypesRepository(object):
         self._dict[get_file_name(frame)][get_first_line_number(frame)].update(a_type)
 
     def return_types(self, file_name, line_number):
-        returntypes= self._dict[file_name][line_number]
-        result=remove_subtypes(returntypes)
+        returntypes = self._dict[file_name][line_number]
+        result = remove_subtypes(returntypes)
         return result
 
 
@@ -255,8 +255,9 @@ class Tracer(object):
 
     def runcall(self, method, *args, **kwargs):
         sys.settrace(self.trace_dispatch)
-        method(*args, **kwargs)
+        result = method(*args, **kwargs)
         sys.settrace(None)
+        return result
 
     def trace_dispatch(self, frame, event, arg):
         if get_file_name(frame).startswith(self.top_level_dir):
@@ -265,36 +266,3 @@ class Tracer(object):
             elif event == 'return':
                 self.on_return(frame, arg)
         return self.trace_dispatch
-
-
-class DuckTestResult(unittest.runner.TextTestResult):
-    no_test_failed = True
-
-    @classmethod
-    def remember_failure(cls):
-        cls.no_test_failed = False
-
-    def addError(self, test, err):
-        self.remember_failure()
-        super(DuckTestResult, self).addError(test, err)
-
-    def addFailure(self, test, err):
-        self.remember_failure()
-        super(DuckTestResult, self).addFailure(test, err)
-
-
-def run(conf):
-    call_types = CallTypesRepository()
-    return_types = ReturnTypesRepository()
-
-    call_frame_processor, return_frame_processor = frame_processors(conf, call_types, return_types)
-
-    tracer = Tracer(conf.top_level_directory, call_frame_processor, return_frame_processor)
-    loader = unittest.TestLoader()
-    runner = unittest.TextTestRunner(failfast=True, resultclass=DuckTestResult)
-
-    for test_directory in conf.discover_tests_in_directories:
-        suite = loader.discover(test_directory, top_level_dir=conf.top_level_directory)
-        tracer.runcall(runner.run, suite)
-
-    return DuckTestResult.no_test_failed, call_types, return_types

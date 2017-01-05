@@ -96,6 +96,8 @@ MAP_B_D = get_mapping_wrapper(dict, [PLAIN_B], [PLAIN_D])
 MULTI_MAP_AC = get_mapping_wrapper(dict, [PLAIN_A, PLAIN_C], [PLAIN_INT])
 MULTI_MAP_BC = get_mapping_wrapper(dict, [PLAIN_B, PLAIN_C], [PLAIN_INT])
 
+MULTI_MAP_ACC = get_mapping_wrapper(dict, [PLAIN_A, PLAIN_C], [PLAIN_C])
+
 
 class TestIsSubtypeMappings(unittest.TestCase):
     def test_own_type(self):
@@ -121,6 +123,10 @@ class TestIsSubtypeMappings(unittest.TestCase):
     def test_multi_map(self):
         assert is_subtype(MULTI_MAP_BC, MULTI_MAP_AC)
         assert not is_subtype(MULTI_MAP_AC, MULTI_MAP_BC)
+
+    def test_another_multimap(self):
+        assert is_subtype(MAP_A_C, MULTI_MAP_ACC)
+        assert not is_subtype(MULTI_MAP_ACC, MAP_A_C)
 
 
 class TestRemoveSubtypes(unittest.TestCase):
