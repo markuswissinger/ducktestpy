@@ -157,6 +157,13 @@ tag, so ducktest currently does not write one::
         yield 1
 
 
+type hierarchies
+----------------
+
+If a type and its subtype both appear in the same :type or :rtype tag, the subtype is omitted from the tag. Types of
+ojects in containers and mappings are considered. For example: if B is subtype of A, then list[B] is considered a
+subtype of list[A].
+
 installation
 ============
 
@@ -230,7 +237,8 @@ notable (intended) behaviour
 TODO (unordered)
 ================
 
-- do not print a type if a supertype is printed in the same tag
+- how to handle @abstractmethod and @abstractproperty? Those functions are never executed (also not during tests) but
+  deserve a type hint.
 - introduce an *any* type...
 - do not record types from tests that use *assertRaises*, since those might be wrong
 - resolve old style classes
