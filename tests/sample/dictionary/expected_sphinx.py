@@ -5,3 +5,12 @@ def some_kwargs(**kwargs):
     some docstring
     """
     return kwargs
+
+
+def another(*args, **kwargs):
+    """
+    :type args: tuple of int
+    :type kwargs: c or d or i or t
+    :rtype: tuple of int
+    """
+    return args
