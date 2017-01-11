@@ -97,9 +97,7 @@ def handle_mapper(a_type):
     if a_type.mapped_types:
         return [full_name(a_type.own_type) + ' of (' + full_name(list(mapped_type[0])[0].own_type) + ',' + full_name(
             list(mapped_type[1])[0].own_type) + ')' for mapped_type in a_type.mapped_types]
-    print(a_type)
-    print(full_name(a_type.own_type))
-    return full_name(a_type.own_type)
+    return [full_name(a_type.own_type)]
 
 
 def handle_container_type(a_type):
@@ -127,13 +125,7 @@ def get_type_names(type_wrappers):
         resulting_wrappers += wrapper_handler[type(type_wrapper)](type_wrapper)
         if type(type_wrapper) != PlainTypeWrapper:
             non_plain_names.add(full_name(type_wrapper.own_type))
-
-    plain_types_excluded = []
-    for full_type_name in resulting_wrappers:
-        if full_type_name in non_plain_names:
-            continue
-        plain_types_excluded.append(full_type_name)
-    return ' or '.join(sorted(list(set(plain_types_excluded))))
+    return ' or '.join(sorted(list(set(resulting_wrappers))))
 
 
 def write_file(file_name, lines):

@@ -166,8 +166,6 @@ class CallTypeStorer(Processor):
         self.call_types = call_types
 
     def process(self, value, name, frame):
-        print(self.get_type(value))
-        print(get_function_name(frame))
         self.call_types.store(self.get_type(value), name, frame)
 
 

@@ -10,17 +10,17 @@ def some_kwargs(**kwargs):
 def another(*args, **kwargs):
     """
     :type args: tuple of int
-    :type kwargs: c or d or i or t
+    :type kwargs: dict
     :rtype: tuple of int
     """
     return args
 
 
 def yet_another(**kwargs):
-    """:type kwargs: c or d or i or t"""
+    """:type kwargs: dict"""
     pass
 
 
 def some(a):
-    """:type a: c or d or i or t"""
+    """:type a: dict"""
     pass
