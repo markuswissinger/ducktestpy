@@ -97,6 +97,8 @@ def handle_mapper(a_type):
     if a_type.mapped_types:
         return [full_name(a_type.own_type) + ' of (' + full_name(list(mapped_type[0])[0].own_type) + ',' + full_name(
             list(mapped_type[1])[0].own_type) + ')' for mapped_type in a_type.mapped_types]
+    print(a_type)
+    print(full_name(a_type.own_type))
     return full_name(a_type.own_type)
 
 

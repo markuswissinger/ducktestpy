@@ -1,6 +1,6 @@
 import unittest
 
-from tests.sample.dictionary.original import some_kwargs, another
+from tests.sample.dictionary.original import some_kwargs, another, yet_another, some
 
 
 class TestIntegration(unittest.TestCase):
@@ -8,4 +8,10 @@ class TestIntegration(unittest.TestCase):
         some_kwargs(a=1)
 
     def test_another(self):
-        another(1, 2)
+        another(1)
+
+    def test_yet_another(self):
+        yet_another()
+
+    def test_some(self):
+        some({})

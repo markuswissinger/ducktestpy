@@ -14,3 +14,13 @@ def another(*args, **kwargs):
     :rtype: tuple of int
     """
     return args
+
+
+def yet_another(**kwargs):
+    """:type kwargs: c or d or i or t"""
+    pass
+
+
+def some(a):
+    """:type a: c or d or i or t"""
+    pass
