@@ -24,7 +24,7 @@ import six
 from future.utils import iteritems
 
 from ducktest.base import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper, Processor, chain
-from ducktest.supertypes import remove_subtypes
+from ducktest.subtypes import remove_subtypes
 
 CO_GENERATOR = 0x20
 

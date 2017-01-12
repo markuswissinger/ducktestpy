@@ -4,7 +4,7 @@ from collections import Iterable, OrderedDict
 from hamcrest import assert_that, is_
 
 from ducktest.base import PlainTypeWrapper, ContainerTypeWrapper, MappingTypeWrapper
-from ducktest.supertypes import is_subtype, remove_subtypes
+from ducktest.subtypes import is_subtype, remove_subtypes
 
 
 class A(object):
