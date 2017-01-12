@@ -49,3 +49,6 @@ class TestIntegration(unittest.TestCase):
 
     def test_supertypes(self):
         self.assert_sphinx_docstring_written_in_folder('supertypes')
+
+    def test_raising(self):
+        self.assert_sphinx_docstring_written_in_folder('raising')
