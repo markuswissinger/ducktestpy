@@ -164,7 +164,8 @@ If a type and its subtype both appear in the same :type or :rtype tag, the subty
 objects in containers and mappings are considered. For example: if B is subtype of A, then list[B] is considered a
 subtype of list[A].
 
-Empty container and mapping types are considered subtypes of non-empty conainers and mappings. A *list* is not
+Empty container and mapping types are considered subtypes of non-empty conainers and mappings. Therefore empty
+containers/mappings are omitted, when non-empty ones are present in the same type tag. A *list* is not
 equivalent to a *list of any*.
 
 installation
