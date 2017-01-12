@@ -243,8 +243,8 @@ TODO (unordered)
 - do not record types from tests that use *assertRaises*, since those might be wrong
 - resolve old style classes
 - When a parameter is a class (not an instance), its type is *type* or *metaclass*. Calls to its classmethods will
-  create warnings in static type checkers. There seems to be no way to express this correctly in the sphinx docstring
-  format
+  create warnings in static type checkers. There seems to be no way to express this in the sphinx docstring
+  format that is parsed by type checkers
 - Useful unimplemented configuration options:
     - handle hand-written mocks
     - exclude subfolders from type writing
