@@ -161,8 +161,11 @@ type hierarchies
 ----------------
 
 If a type and its subtype both appear in the same :type or :rtype tag, the subtype is omitted from the tag. Types of
-ojects in containers and mappings are considered. For example: if B is subtype of A, then list[B] is considered a
+objects in containers and mappings are considered. For example: if B is subtype of A, then list[B] is considered a
 subtype of list[A].
+
+Empty container and mapping types are considered subtypes of non-empty conainers and mappings. A *list* is not
+equivalent to a *list of any*.
 
 installation
 ============
@@ -231,8 +234,6 @@ notable (intended) behaviour
 
 -   ducktest does not write tags for NoneType or a plain mock.Mock (without _spec_class)
 
--   empty container and mapping types are not printed, if there is a non-empty one: e.g. *list and list of int* is
-    printed as *list of int*
 
 TODO (unordered)
 ================
