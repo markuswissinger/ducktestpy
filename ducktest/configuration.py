@@ -21,6 +21,8 @@ from ducktest.sphinx_docstring import DocstringWriter
 from ducktest.typing import CallTypesRepository, ReturnTypesRepository, frame_processors, Tracer
 from ducktest.version import VERSION
 
+DUCK_TEST = False, ''
+
 
 class DucktestConfiguration(object):
     def __init__(
@@ -70,6 +72,8 @@ class DucktestConfiguration(object):
 
     def run(self):
         print('ducktest {}'.format(VERSION))
+        global DUCK_TEST
+        DUCK_TEST = True, 'ducktest run'
 
         call_types, return_types = self.trace_tests()
 

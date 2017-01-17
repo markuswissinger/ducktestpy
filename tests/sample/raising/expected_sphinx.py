@@ -1,6 +1,6 @@
 def some(a):
     """
-    :type a: NoneType or str
+    :type a: str
     :rtype: str
     """
     if not a:
