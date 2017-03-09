@@ -1,12 +1,16 @@
 import unittest
 
-from ducktest.setattr_write import Context
+from ducktest.setattr_write import Tokens
 
 
-class TestSourceContext(unittest.TestCase):
-    def test_repr(self):
-        file_context=Context('SomeFile')
-        class_context=Context('SomeClass(object):\n')
-        class_context._contained=['pass\n']
-        file_context._contained=['blaBlaBla\n', class_context]
-        print(file_context)
+class TestGenerate(unittest.TestCase):
+    def test_some(self):
+        start_token = Tokens(None, [])
+        start_token.add_child('BLA')
+        second = Tokens(start_token, ['blubb'])
+        start_token.add_child(second)
+        for definition in start_token.definitions():
+            print(definition)
+
+        print(start_token.definition)
+        print(second.definition)
