@@ -33,12 +33,11 @@ class Tokens(object):
         self.children.append(child)
 
     def definitions(self):
+        yield self.definition
         for child in self.children:
             if isinstance(child, Tokens):
-                yield child.definition
-                if isinstance(child, Tokens):
-                    for grandchild in child.children:
-                        yield grandchild.definitions()
+                for child_definition in child.definitions():
+                    yield child_definition
 
     def tokens(self):
         for child in self.children:
@@ -89,5 +88,5 @@ with open('/home/markus/git/ducktestpy/ducktest/setattr_write.py') as f:
         print(item)
     print(tokenize.untokenize(listed))
 
-    for definition in parsed.definitions():
+    for definition in parse_source(lines).definitions():
         print(definition)
