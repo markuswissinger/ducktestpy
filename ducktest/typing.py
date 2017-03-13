@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import sys
+import threading
 import types
 from abc import abstractmethod, ABCMeta
 from collections import Container, Iterable, Mapping, defaultdict, OrderedDict
@@ -210,11 +211,14 @@ class OrderedDefaultDict(OrderedDict):
 
 
 class CallTypesRepository(object):
+    lock = threading.Lock()
+
     def __init__(self):
         self._dict = defaultdict(lambda: defaultdict(lambda: (OrderedDefaultDict(set))))
 
     def store(self, a_type, name, frame):
-        self._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(a_type)
+        with self.lock:
+            self._dict[get_file_name(frame)][get_first_line_number(frame)][name].update(a_type)
 
     def call_types(self, file_name, line_number):
         calltypes = self._dict[file_name][line_number]
@@ -225,11 +229,14 @@ class CallTypesRepository(object):
 
 
 class ReturnTypesRepository(object):
+    lock = threading.Lock()
+
     def __init__(self):
         self._dict = defaultdict(lambda: defaultdict(set))
 
     def store(self, a_type, frame):
-        self._dict[get_file_name(frame)][get_first_line_number(frame)].update(a_type)
+        with self.lock:
+            self._dict[get_file_name(frame)][get_first_line_number(frame)].update(a_type)
 
     def return_types(self, file_name, line_number):
         returntypes = self._dict[file_name][line_number]

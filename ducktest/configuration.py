@@ -17,6 +17,7 @@ limitations under the License.
 import os
 import unittest
 
+from ducktest import util
 from ducktest.sphinx_docstring import DocstringWriter
 from ducktest.typing import CallTypesRepository, ReturnTypesRepository, frame_processors, Tracer
 from ducktest.version import VERSION
@@ -61,6 +62,8 @@ class DucktestConfiguration(object):
         return_types = ReturnTypesRepository()
         call_frame_processor, return_frame_processor = frame_processors(self, call_types, return_types)
         tracer = Tracer(self.top_level_directory, call_frame_processor, return_frame_processor)
+
+        util.DUCKTEST_TRACE_DISPATCH = tracer.trace_dispatch
 
         for test_directory in self.discover_tests_in_directories:
             suite = self.test_loader.discover(test_directory, top_level_dir=self.top_level_directory)

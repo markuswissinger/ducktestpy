@@ -27,7 +27,7 @@ class Tokens(object):
     def __init__(self, parent, definition):
         self.definition = definition
         self.parent = parent
-        self.children = list(definition)
+        self.children = []
 
     def add_child(self, child):
         self.children.append(child)
@@ -42,7 +42,7 @@ class Tokens(object):
                         yield child_definition
 
     def tokens(self):
-        for child in self.children:
+        for child in self.definition + self.children:
             if isinstance(child, Tokens):
                 for token in child.tokens():
                     yield token
@@ -87,11 +87,8 @@ if __name__ == '__main__':
 
     with open('/home/markus/git/ducktestpy/ducktest/setattr_write.py') as f:
         lines = f.readlines()
-        parsed = parse_source(lines)
-        listed = list(parsed.tokens())
-        # for item in listed:
-        #    print(item)
-        # print(tokenize.untokenize(listed))
+        
+        print(tokenize.untokenize(parse_source(lines).tokens()))
 
         for definition in parse_source(lines).definitions():
             print(definition)
