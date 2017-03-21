@@ -7,6 +7,8 @@ class CodeBlock(object):
     def __init__(self, parent):
         self.parent = parent
         self.children = []
+        self.name = None
+        self.offset=None
 
     def with_appended(self, child):
         if child[0] == tokenize.INDENT:
@@ -35,6 +37,18 @@ class CodeBlock(object):
         self.children.append(child)
         return self
 
+    def child_blocks(self):
+        for child in self.children:
+            if isinstance(child, CodeBlock):
+                yield child
+                for grandchild in child.child_blocks():
+                    yield grandchild
+
+    def append(self, tokens):
+        """tokens: CodeBlock or tokens"""
+        self.offset = tokens[-1][3][1]
+        self.children.append(tokens)
+
     def tokens(self):
         for child in self.children:
             try:
@@ -46,7 +60,6 @@ class CodeBlock(object):
 
 class ClassBlock(CodeBlock):
     def __init__(self, parent):
-        self.name = None
         self.expected_indent = True
         super(ClassBlock, self).__init__(parent)
 
@@ -80,7 +93,6 @@ class ClassBlock(CodeBlock):
 
 class MethodBlock(CodeBlock):
     def __init__(self, parent):
-        self.name = None
         self.expected_indent = True
         super(MethodBlock, self).__init__(parent)
 
@@ -104,7 +116,6 @@ class MethodBlock(CodeBlock):
 
 class DecoratedBlock(CodeBlock):
     def __init__(self, parent):
-        self.name = None
         self._got_def = False
         self.expected_indent = True
         super(DecoratedBlock, self).__init__(parent)
@@ -146,6 +157,8 @@ if __name__ == '__main__':
         print(tokenize.untokenize(parse_source(lines).tokens()))
 
         start = parse_source(lines)
+
+        print([(block.name, block.offset) for block in start.child_blocks()])
 
         start.tokens()
 
