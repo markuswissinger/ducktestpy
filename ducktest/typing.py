@@ -66,13 +66,22 @@ class DirectoriesValidater(Processor):
 
 
 class CallVariableSplitter(Processor):
+    def __init__(self):
+        super(CallVariableSplitter, self).__init__()
+        self.known = {}
+
     def process(self, frame):
-        for name in get_variable_names(frame):
+        key = get_file_name(frame), get_function_name(frame), get_first_line_number(frame)
+        names = self.known.get(key)
+        if names is None:
+            names = tuple(name for name in get_variable_names(frame) if name in frame.f_locals)
+            self.known[key] = names
+        for name in names:
             try:
                 value = get_local_variable(frame, name)
+                self.next_processor.process(value, name, frame)
             except KeyError:
-                continue
-            self.next_processor.process(value, name, frame)
+                pass
 
 
 def get_plain_type(parameter):
