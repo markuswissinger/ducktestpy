@@ -55,3 +55,6 @@ class TestIntegration(unittest.TestCase):
 
     def test_module_constants(self):
         self.assert_sphinx_docstring_written_in_folder('module_constants')
+
+    def test_string_in_docstring(self):
+        self.assert_sphinx_docstring_written_in_folder('string_in_docstring')
