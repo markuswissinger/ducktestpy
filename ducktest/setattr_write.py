@@ -3,37 +3,45 @@ import tokenize
 from ducktest.sphinx_docstring import WrappedIterator
 
 
+class LogicalLine(object):
+    def __init__(self, parent):
+        self.parent = parent
+        self.children = []
+
+    def append(self, token):
+        self.children.append(token)
+
+    def tokens(self, offset):  # increase offset when lines are added
+        for child in self.children:
+            token_type, text, (srow, scol), (erow, ecol), l = child
+            yield token_type, text, (srow + offset, scol), (erow + offset, ecol), l
+
+
 class CodeBlock(object):
     def __init__(self, parent):
         self.parent = parent
         self.children = []
         self.name = None
-        self.offset=None
+        self.current_line = LogicalLine(self)
+
+    def append_grandchild(self, new_class, child):
+        block = new_class(self)
+        self.children.append(block)
+        block.children.append(child)
+        return block
 
     def with_appended(self, child):
         if child[0] == tokenize.INDENT:
-            new = CodeBlock(self)
-            self.children.append(new)
-            new.children.append(child)
-            return new
+            return self.append_grandchild(CodeBlock, child)
         if child[0] == tokenize.DEDENT:
             self.children.append(child)
             return self.parent
         if child[:2] == (tokenize.NAME, 'class'):
-            new = ClassBlock(self)
-            self.children.append(new)
-            new.children.append(child)
-            return new
+            return self.append_grandchild(ClassBlock, child)
         if child[:2] == (tokenize.NAME, 'def'):
-            new = MethodBlock(self)
-            self.children.append(new)
-            new.children.append(child)
-            return new
+            return self.append_grandchild(MethodBlock, child)
         if child[:2] == (tokenize.OP, '@'):
-            new = DecoratedBlock(self)
-            self.children.append(new)
-            new.children.append(child)
-            return new
+            return self.append_grandchild(DecoratedBlock, child)
         self.children.append(child)
         return self
 
@@ -46,7 +54,6 @@ class CodeBlock(object):
 
     def append(self, tokens):
         """tokens: CodeBlock or tokens"""
-        self.offset = tokens[-1][3][1]
         self.children.append(tokens)
 
     def tokens(self):
@@ -146,7 +153,23 @@ def parse_source(lines):
     head = start_block
     for token in tokenize.generate_tokens(wrapped_iterator.next_line):
         token_type, text, (srow, scol), (erow, ecol), l = token
+        # print(token)
         head = head.with_appended(token)
+    return start_block
+
+class RCodeBlock(object):
+    def __init__(self, parent):
+        self.parent = parent
+
+
+
+def reparse_source(lines):
+    wrapped_iterator = WrappedIterator(lines)
+    start_block = RCodeBlock(None)
+    head = start_block
+    for token in tokenize.generate_tokens(wrapped_iterator.next_line):
+        token_type, text, (srow, scol), (erow, ecol), l = token
+        # print(token)
     return start_block
 
 
@@ -156,9 +179,10 @@ if __name__ == '__main__':
 
         print(tokenize.untokenize(parse_source(lines).tokens()))
 
-        start = parse_source(lines)
+        #start = parse_source(lines)
 
-        print([(block.name, block.offset) for block in start.child_blocks()])
+        #print([(block.name) for block in start.child_blocks()])
+
 
         start.tokens()
 
