@@ -161,14 +161,14 @@ class DocstringWriter(object):
 
                 srow, scol, erow, ecol, doclines = parsed_docstrings[def_line_number]
 
-                clean_doclines = process_doclines(doclines)
+                clean_doclines, marker = process_doclines(doclines)
 
                 full_docstring = to_add + clean_doclines
                 if full_docstring:
                     if len(full_docstring) == 1:
-                        new_docstring = ['"""' + full_docstring[0] + '"""']
+                        new_docstring = [marker + full_docstring[0] + marker]
                     else:
-                        new_docstring = ['"""'] + full_docstring + ['"""']
+                        new_docstring = [marker] + full_docstring + [marker]
                 else:
                     new_docstring = []
                 formatted = [' ' * scol + line + '\n' for line in new_docstring]
@@ -178,12 +178,20 @@ class DocstringWriter(object):
 
 def process_doclines(doclines):
     if not doclines:
-        return []
-    if doclines[0] == '"""' or doclines[0] == "'''":
+        return [], '"""'
+    if doclines[0].startswith("'''"):
+        marker = "'"
+    else:
+        marker = '"'
+
+    if doclines[0] == marker * 3:
         doclines = doclines[1:]
-    if doclines[-1] == '"""' or doclines[-1] == "'''":
+    else:
+        doclines[0] = doclines[0].lstrip(marker)
+
+    if doclines[-1] == marker * 3:
         doclines = doclines[:-1]
-    if doclines:
-        doclines[0] = doclines[0].lstrip('"').lstrip("'")
-        doclines[-1] = doclines[-1].rstrip('"').rstrip("'")
-    return [docline for docline in doclines if not is_hint_line(docline)]
+    else:
+        doclines[-1] = doclines[-1].rstrip(marker)
+
+    return [docline for docline in doclines if not is_hint_line(docline)], marker * 3

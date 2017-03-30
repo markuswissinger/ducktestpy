@@ -179,12 +179,13 @@ if __name__ == '__main__':
 
         print(tokenize.untokenize(parse_source(lines).tokens()))
 
-        #start = parse_source(lines)
+        start = parse_source(lines)
 
+        for token in start.tokens():
+            print(token)
         #print([(block.name) for block in start.child_blocks()])
 
 
-        start.tokens()
 
         # for definition in parse_source(lines).definitions():
         #    print(definition)
