@@ -1,14 +1,20 @@
+import os
 import tokenize
 import unittest
-
 from hamcrest import assert_that, is_
 
 from ducktest.parser import parse_lines, parse_blocks
 
+path = os.path.split(__file__)[0]
+
+
+def in_path(a_file):
+    return os.path.join(path, a_file)
+
 
 class TestParser(unittest.TestCase):
     def test_parse(self):
-        with open('/home/markus/git/ducktestpy/tests/to_parse.py') as f:
+        with open(in_path('to_parse.py')) as f:
             lines = f.readlines()
             parsed = parse_lines(lines)
             root_block = parse_blocks(parsed)
@@ -44,14 +50,14 @@ class TestParser(unittest.TestCase):
             ]))
 
     def test_round_trip(self):
-        with open('/home/markus/git/ducktestpy/tests/to_parse.py') as f:
+        with open(in_path('to_parse.py')) as f:
             lines = f.readlines()
             parsed = parse_lines(lines)
             root_block = parse_blocks(parsed)
             assert_that(tokenize.untokenize(root_block.tokens()), is_(''.join(lines)))
 
     def test_parseB(self):
-        with open('/home/markus/git/ducktestpy/tests/to_parse.py') as f:
+        with open(in_path('to_parse.py')) as f:
             lines = f.readlines()
             parsed = parse_lines(lines)
             root_block = parse_blocks(parsed)
