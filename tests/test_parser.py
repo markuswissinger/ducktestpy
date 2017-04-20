@@ -38,6 +38,11 @@ class TestParser(unittest.TestCase):
             assert_that(root_block.children[0].children[1].children[0].children, is_(line_1_tokens))
             assert_that(root_block.children[0].children[1].children[0].name, is_('__init__'))
 
+            assert_that(root_block.children[0].children[1].children[1].children, is_([
+                (3, '"""a docstring"""', (3, 8), (3, 25), '        """a docstring"""\n'),
+                (4, '\n', (3, 25), (3, 26), '        """a docstring"""\n'),
+            ]))
+
     def test_round_trip(self):
         with open('/home/markus/git/ducktestpy/tests/to_parse.py') as f:
             lines = f.readlines()
@@ -51,4 +56,3 @@ class TestParser(unittest.TestCase):
             parsed = parse_lines(lines)
             root_block = parse_blocks(parsed)
             print('ui')
-
