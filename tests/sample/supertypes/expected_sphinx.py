@@ -16,23 +16,23 @@ def some(a):
 
 def another(a):
     """
-    :type a: dict of (tests.sample.supertypes.original.A,int)
-    :rtype: dict of (tests.sample.supertypes.original.A,int)
+    :type a: dict of tests.sample.supertypes.original.A,int
+    :rtype: dict of tests.sample.supertypes.original.A,int
     """
     return a
 
 
 def yet_another(a):
     """
-    :type a: dict of (int,tests.sample.supertypes.original.A)
-    :rtype: dict of (int,tests.sample.supertypes.original.A)
+    :type a: dict of int,tests.sample.supertypes.original.A
+    :rtype: dict of int,tests.sample.supertypes.original.A
     """
     return a
 
 
 def empty(a):
     """
-    :type a: dict of (tests.sample.supertypes.original.A,int)
-    :rtype: dict of (tests.sample.supertypes.original.A,int)
+    :type a: dict of tests.sample.supertypes.original.A,int
+    :rtype: dict of tests.sample.supertypes.original.A,int
     """
     return a
