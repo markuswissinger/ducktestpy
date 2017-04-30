@@ -1,19 +1,21 @@
-import tokenize
-
 import itertools
+import tokenize
 
 from ducktest.sphinx_docstring import WrappedIterator
 
 
 class CodeLine(object):
     def __init__(self, transfer=None):
-        self.children = transfer.children if transfer else []
+        self.children = transfer if transfer else []
 
     def append(self, token):
         self.children.append(token)
 
+    def __eq__(self, other):
+        return isinstance(other, CodeLine) and self.children == other.children
+
     def __repr__(self):
-        return repr(self.children)
+        return '{}(transfer={})'.format(type(self).__name__, repr(self.children))
 
     def on_parse_blocks(self, head, ignore_next_indent):
         head.append(self)
@@ -33,6 +35,7 @@ class DedentLine(CodeLine):
 class IndentLine(CodeLine):
     def on_parse_blocks(self, head, ignore_next_indent):
         if ignore_next_indent:
+            head.append(self)
             return head, False
         new_block = CodeBlock(head)
         head.append(self)
@@ -112,31 +115,31 @@ def new_line(current_line, lines):
 
 def parse_lines(lines):
     wrapped_iterator = WrappedIterator(lines)
-    lines = []
+    parsed_lines = []
     current_line = CodeLine()
     for token in tokenize.generate_tokens(wrapped_iterator.next_line):
         token_type, text, (srow, scol), (erow, ecol), l = token
         if token_type == tokenize.INDENT:
-            current_line = new_line(current_line, lines)
-            current_line = IndentLine(transfer=current_line)
+            current_line = new_line(current_line, parsed_lines)
+            current_line = IndentLine(transfer=current_line.children)
             current_line.append(token)
-            current_line = new_line(current_line, lines)
+            current_line = new_line(current_line, parsed_lines)
             continue
         if token_type == tokenize.DEDENT:
-            current_line = new_line(current_line, lines)
-            current_line = DedentLine(transfer=current_line)
+            current_line = new_line(current_line, parsed_lines)
+            current_line = DedentLine(transfer=current_line.children)
             current_line.append(token)
-            current_line = new_line(current_line, lines)
+            current_line = new_line(current_line, parsed_lines)
             continue
 
         current_line.append(token)
         if (token_type, text) == (tokenize.NAME, 'class'):
-            current_line = ClassLine(transfer=current_line)
+            current_line = ClassLine(transfer=current_line.children)
         if (token_type, text) == (tokenize.NAME, 'def'):
-            current_line = DefLine(transfer=current_line)
+            current_line = DefLine(transfer=current_line.children)
         if token_type == tokenize.NEWLINE or (token_type, text) == (54, '\n'):
-            current_line = new_line(current_line, lines)
-    return lines
+            current_line = new_line(current_line, parsed_lines)
+    return parsed_lines
 
 
 def parse_blocks(parsed_lines):
@@ -145,7 +148,7 @@ def parse_blocks(parsed_lines):
     ignore_next_indent = False
     for line in parsed_lines:
         head, ignore_next_indent = line.on_parse_blocks(head, ignore_next_indent)
-    return head
+    return start_block
 
 
 if __name__ == '__main__':
