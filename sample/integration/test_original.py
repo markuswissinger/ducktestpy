@@ -3,10 +3,10 @@ import unittest
 from hamcrest import assert_that, is_
 from mock import Mock, create_autospec
 
-from original import multi_line_docstring_example, no_docstring, new_docstring, \
+from sample.integration.original import multi_line_docstring_example, no_docstring, new_docstring, \
     single_line_docstring, two_line_docstring, list_example, single_result_line, mock_example, non_builtin_example, \
     generator_example
-from stuff import Some, Other
+from sample.integration.stuff import Some, Other
 
 
 class TestIntegration(unittest.TestCase):

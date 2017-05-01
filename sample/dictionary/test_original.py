@@ -1,6 +1,6 @@
 import unittest
 
-from original import some_kwargs, another, yet_another, some
+from sample.dictionary.original import some_kwargs, another, yet_another, some
 
 
 class TestIntegration(unittest.TestCase):

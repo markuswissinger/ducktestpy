@@ -1,6 +1,6 @@
 import unittest
 
-from original import some, another
+from sample.module_constants.original import some, another
 
 
 class TestIntegration(unittest.TestCase):

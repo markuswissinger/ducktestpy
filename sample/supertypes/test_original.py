@@ -1,6 +1,6 @@
 import unittest
 
-from original import some, A, B, another, yet_another, empty
+from sample.supertypes.original import some, A, B, another, yet_another, empty
 
 
 class TestIntegration(unittest.TestCase):

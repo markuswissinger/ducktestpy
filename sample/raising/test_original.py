@@ -4,7 +4,7 @@ try:
     from ducktest.configuration import DUCK_TEST
 except ImportError:
     DUCK_TEST = False, ''
-from original import some
+from sample.raising.original import some
 
 
 class TestOriginal(unittest.TestCase):
