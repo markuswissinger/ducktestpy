@@ -1,3 +1,19 @@
+"""
+Copyright 2016 Markus Wissinger. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 import itertools
 import tokenize
 
@@ -149,18 +165,3 @@ def parse_blocks(parsed_lines):
     for line in parsed_lines:
         head, ignore_next_indent = line.on_parse_blocks(head, ignore_next_indent)
     return start_block
-
-
-if __name__ == '__main__':
-    with open('/home/markus/git/ducktestpy/ducktest/setattr_write.py') as f:
-        lines = f.readlines()
-
-        parsed = parse_lines(lines)
-        for line in parsed:
-            print(line)
-
-        root_block = parse_blocks(parsed)
-
-        print(root_block)
-        # for definition in parse_source(lines).definitions():
-        #    print(definition)
