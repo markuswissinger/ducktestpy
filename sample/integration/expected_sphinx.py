@@ -5,16 +5,16 @@ def generator_example():
 
 def non_builtin_example(a):
     """
-    :type a: tests.sample.integration.stuff.Other or tests.sample.integration.stuff.Some
-    :rtype: tests.sample.integration.stuff.Other or tests.sample.integration.stuff.Some
+    :type a: sample.integration.stuff.Other or sample.integration.stuff.Some
+    :rtype: sample.integration.stuff.Other or sample.integration.stuff.Some
     """
     return a
 
 
 def mock_example(a):
     """
-    :type a: int or tests.sample.integration.stuff.Some
-    :rtype: int or tests.sample.integration.stuff.Some
+    :type a: int or sample.integration.stuff.Some
+    :rtype: int or sample.integration.stuff.Some
     """
     return a
 
