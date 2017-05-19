@@ -6,7 +6,8 @@ import unittest
 
 from hamcrest import assert_that, is_
 
-from ducktest.parser import parse_lines, parse_blocks, ClassLine, IndentLine, DedentLine, CodeLine, DefLine
+from ducktest.parser import parse_lines, parse_blocks, ClassLine, IndentLine, DedentLine, CodeLine, DefLine, \
+    parse_logical_lines, SignatureParser
 
 python_major = int(sys.version.split('.')[0])
 
@@ -101,9 +102,57 @@ class TestParser(unittest.TestCase):
         tokens = itertools.chain.from_iterable(line.children for line in parsed)
         assert_that(tokenize.untokenize(tokens), is_(''.join(lines)))
 
-    def test_token_roundtrip(self):
-        with open(__file__) as f:
-            file_str = ''.join(f.readlines())
-        with open(__file__) as f:
-            a = list(tokenize.generate_tokens(f.readline))
-            assert_that(tokenize.untokenize(a), is_(file_str))
+    def test_parse_logical_lines(self):
+        with open(in_path('parse_example_b.py')) as f:
+            lines = list(f.readlines())
+        parsed = parse_logical_lines(lines)
+        def_line = parsed[2]
+        parser = SignatureParser()
+        parser.parse_signature(def_line)
+        assert_that(def_line.children[parser.name_positions[0]][1], is_('self'))
+        assert_that(def_line.children[parser.name_positions[1]][1], is_('a'))
+        assert_that(def_line.children[parser.name_positions[2]][1], is_('b'))
+        assert_that(def_line.children[parser.name_positions[3]][1], is_('c'))
+        assert_that(parser.name_positions, is_([4, 6, 11, 15]))
+        assert_that(parser.hint_start_positions, is_([5, 8, 13, 17]))
+        assert_that(parser.hint_end_positions, is_([5, 9, 14, 17]))
+
+    def test_parse_logical_lines_B(self):
+        with open(in_path('parse_example_b.py')) as f:
+            lines = list(f.readlines())
+        parsed = parse_logical_lines(lines)
+        def_line = parsed[4]
+        parser = SignatureParser()
+        parser.parse_signature(def_line)
+        assert_that(def_line.children[parser.name_positions[0]][1], is_('self'))
+        assert_that(parser.name_positions, is_([5]))
+        assert_that(parser.hint_start_positions, is_([6]))
+        assert_that(parser.hint_end_positions, is_([6]))
+
+    def test_parse_logical_lines_C(self):
+        with open(in_path('parse_example_b.py')) as f:
+            lines = list(f.readlines())
+        parsed = parse_logical_lines(lines)
+        def_line = parsed[6]
+
+        parser = SignatureParser()
+        parser.parse_signature(def_line)
+        assert_that(def_line.children[parser.name_positions[0]][1], is_('self'))
+        assert_that(def_line.children[parser.name_positions[1]][1], is_('arr'))
+        assert_that(parser.name_positions, is_([5, 7]))
+        assert_that(parser.hint_start_positions, is_([6, 8]))
+        assert_that(parser.hint_end_positions, is_([6, 8]))
+
+    def test_parse_logical_lines_D(self):
+        with open(in_path('parse_example_b.py')) as f:
+            lines = list(f.readlines())
+        parsed = parse_logical_lines(lines)
+        def_line = parsed[8]
+
+        parser = SignatureParser()
+        parser.parse_signature(def_line)
+        assert_that(def_line.children[parser.name_positions[0]][1], is_('self'))
+        assert_that(def_line.children[parser.name_positions[1]][1], is_('a'))
+        assert_that(parser.name_positions, is_([5, 7]))
+        assert_that(parser.hint_start_positions, is_([6, 9]))
+        assert_that(parser.hint_end_positions, is_([6, 10]))

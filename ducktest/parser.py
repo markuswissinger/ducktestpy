@@ -158,6 +158,99 @@ def parse_lines(lines):
     return parsed_lines
 
 
+class SignatureParser(object):
+    def __init__(self):
+        self.count = {item: 0 for item in ('(', ')', '{', '}', '[', ']')}
+        self.signature_started = False
+        self._interpret = self.initial
+        self.name_positions = []
+        self.hint_start_positions = []
+        self.hint_end_positions = []
+
+    def interpret(self, index, token):
+        text = token[1]
+        if text in self.count:
+            self.count[text] += 1
+        self._interpret(index, token)
+
+    def initial(self, index, token):
+        text = token[1]
+        if text == 'def':
+            self._interpret = self.wait_for_name
+
+    def wait_for_name(self, index, token):
+        if token[1] == '(':
+            self.signature_started = True
+        if self.end_of_signature():
+            self._interpret = self.do_pass
+        if not self.in_signature():
+            return
+        token_type = token[0]
+        if token_type == tokenize.NAME:
+            self.name_positions.append(index)
+            self._interpret = self.wait_for_hint_start
+
+    def wait_for_hint_start(self, index, token):
+        if self.end_of_signature():
+            self.hint_start_positions.append(index)
+            self.hint_end_positions.append(index)
+            self._interpret = self.do_pass
+        if not self.in_signature():
+            return
+        if token[1] == ',':
+            self.hint_start_positions.append(index)
+            self.hint_end_positions.append(index)
+            self._interpret = self.wait_for_name
+        if token[1] == ':':
+            self._interpret = self.read_hint_start
+
+    def read_hint_start(self, index, token):
+        self.hint_start_positions.append(index)
+        self._interpret = self.wait_for_hint_end
+
+    def wait_for_hint_end(self, index, token):
+        if self.end_of_signature():
+            self.hint_end_positions.append(index)
+            self._interpret = self.do_pass
+        if not self.in_signature():
+            return
+        if token[1] == ',':
+            self.hint_end_positions.append(index)
+            self._interpret = self.wait_for_name
+
+    def do_pass(self, index, token):
+        pass
+
+    def in_signature(self):
+        return self.count['('] - self.count[')'] == 1 \
+               and self.count['['] - self.count[']'] == 0 \
+               and self.count['{'] - self.count['}'] == 0
+
+    def end_of_signature(self):
+        return self.count['('] - self.count[')'] == 0 and self.signature_started
+
+    def parse_signature(self, def_line):
+        for index, token in enumerate(def_line.children):
+            # token_type, text, start, end, line = token
+            self.interpret(index, token)
+
+
+def parse_logical_lines(lines):
+    wrapped_iterator = WrappedIterator(lines)
+    parsed_lines = []
+    current_line = CodeLine()
+    for token in tokenize.generate_tokens(wrapped_iterator.next_line):
+        token_type, text, (srow, scol), (erow, ecol), l = token
+        current_line.append(token)
+        if (token_type, text) == (tokenize.NAME, 'class'):
+            current_line = ClassLine(transfer=current_line.children)
+        if (token_type, text) == (tokenize.NAME, 'def'):
+            current_line = DefLine(transfer=current_line.children)
+        if token_type == tokenize.NEWLINE:
+            current_line = new_line(current_line, parsed_lines)
+    return parsed_lines
+
+
 def parse_blocks(parsed_lines):
     start_block = CodeBlock(None)
     head = start_block
