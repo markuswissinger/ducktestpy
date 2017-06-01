@@ -19,8 +19,7 @@ methods called in the process. Then ducktest writes that information into the :t
 corresponding method docstrings.
 
 Therefore ducktest creates a much closer link between your tests and your productive code. It will probably not catch
-bugs that the tests you wrote to create the type hints will not catch. But it gives an incentive to write those tests
-in the first place (and allows for autocompletion and navigation).
+bugs that your tests will not catch.
 
 use cases
 =========
@@ -160,11 +159,11 @@ tag, so ducktest currently does not write one::
 type hierarchies
 ----------------
 
-If a type and its subtype both appear in the same :type or :rtype tag, the subtype is omitted from the tag. Types of
+If a type and its subtype both appear in the same :type or :rtype tag, ducktest omits the subtype from the tag. Types of
 objects in containers and mappings are considered. For example: if B is subtype of A, then list[B] is considered a
 subtype of list[A].
 
-Empty container and mapping types are considered subtypes of non-empty conainers and mappings. Therefore empty
+Empty container and mapping types are considered subtypes of non-empty containers and mappings. Therefore empty
 containers/mappings are omitted, when non-empty ones are present in the same type tag. A *list* is not
 equivalent to a *list of any*.
 
@@ -251,4 +250,4 @@ TODO (unordered)
     - handle hand-written mocks
     - exclude subfolders from type writing
     - exclude subfolders from test execution
-- write not only docstrings but python stubs as well
+- pep 484 notation
