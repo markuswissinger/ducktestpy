@@ -149,6 +149,8 @@ class TestParser(unittest.TestCase):
         parsed = parse_logical_lines(lines)
         def_line = parsed[8]
 
+        assert_that(list(def_line.signature()), is_([(5, 6, 6), (7, 9, 10)]))
+
         parser = SignatureParser()
         parser.parse_signature(def_line)
         assert_that(def_line.children[parser.name_positions[0]][1], is_('self'))

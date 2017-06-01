@@ -121,6 +121,14 @@ class DefLine(CodeLine):
             self.name = token[1]
         super(DefLine, self).append(token)
 
+    def first_line(self):
+        return self.children[0][2][0]
+
+    def signature(self):
+        parser = SignatureParser()
+        parser.parse_signature(self)
+        return zip(parser.name_positions, parser.hint_start_positions, parser.hint_end_positions)
+
 
 def new_line(current_line, lines):
     if current_line.children:
@@ -233,6 +241,18 @@ class SignatureParser(object):
         for index, token in enumerate(def_line.children):
             # token_type, text, start, end, line = token
             self.interpret(index, token)
+
+
+class LogicalLines(object):
+    def __init__(self):
+        self.lines = {}
+
+    def append(self, line):
+        self.lines.append(line)
+        self.offsets.append(0)
+
+    def insert(self, index, line):
+        self.lines.insert(index, line)
 
 
 def parse_logical_lines(lines):
