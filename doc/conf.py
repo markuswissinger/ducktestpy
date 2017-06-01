@@ -54,20 +54,23 @@ project = u'ducktest'
 copyright = u'2016, Markus Wissinger'
 author = u'Markus Wissinger'
 
-
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-def get_version():
-    here = os.path.abspath(os.path.dirname(__file__))
-    project_root = os.path.dirname(here)
-    with open(os.path.join(project_root, 'VERSION.txt')) as f:
-        return str(f.read())
 
+import re
+from codecs import open
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+project_root, doc_path = os.path.split(here)
+
+with open(os.path.join(project_root, 'ducktest', 'version.py')) as f:
+    first_line = f.readline().decode()
+    version = re.match("VERSION = '([^\']+)'", first_line).group(1)
 
 # The short X.Y version.
-version = get_version()
 # The full version, including alpha/beta/rc tags.
 release = version
 
