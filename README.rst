@@ -8,4 +8,4 @@ that information into the corresponding method docstrings.
 
 github: https://github.com/markuswissinger/ducktestpy/
 
-readthedocs: http://markuswissinger.readthedocs.io/en/latest/
+documentation: https://github.com/markuswissinger/ducktestpy/blob/master/doc/doc.rst
