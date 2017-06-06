@@ -66,9 +66,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 project_root, doc_path = os.path.split(here)
 
-with open(os.path.join(project_root, 'ducktest', 'version.py')) as f:
-    first_line = f.readline()
-    version = re.match("VERSION = '([^\']+)'", first_line).group(1)
+version = '0.1.11'
 
 # The short X.Y version.
 # The full version, including alpha/beta/rc tags.
