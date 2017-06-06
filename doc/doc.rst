@@ -18,9 +18,6 @@ ducktest executes unit tests and collects the types of *method parameters* and *
 methods called in the process. Then ducktest writes that information into the :type and :rtype tags of the
 corresponding method docstrings.
 
-Therefore ducktest creates a much closer link between your tests and your productive code. It will probably not catch
-bugs that your tests will not catch.
-
 use cases
 =========
 
@@ -81,7 +78,7 @@ non-builtin objects the full reference is written::
         pass
 
 
-Mocks are also the perfect opportunity to create type hints for abstract base classes.
+Mocks allow to create type hints for any class. Also for abstract base classes.
 
 
 iterable collections
@@ -167,6 +164,10 @@ Empty container and mapping types are considered subtypes of non-empty container
 containers/mappings are omitted, when non-empty ones are present in the same type tag. A *list* is not
 equivalent to a *list of any*.
 
+If you need a type hint for an abstract base class, you might either mock it (see Mocks above), or replace
+the __abstractmethods__ property of the class by an empty set for the duration of the test and create an instance.
+Both will result in a test of the abstract class and a correct type hint.
+
 installation
 ============
 
@@ -191,11 +192,15 @@ Create a python script on the top level of your project. For example run_ducktes
                           ignore_call_parameter_names=('self', 'cls'),
                           ).run()
 
-First parameter is always the calling file, that is used to determine the top level directory.
+First parameter is the calling file, if the script is on project top level. The Configuration object splits the file
+and uses the path.
 ducktest discovers and executes tests in test_directories, writes types in write_directories.
+
 All directories are relative to the top level directory. So the script run_ducktest.py can be checked in to version
 control. Directories with more than one level should be given as tuple, to avoid OS specific path separators.
-Parameter names in ignore_call_parameter_names are ignored. The default should do.
+
+Parameter names in ignore_call_parameter_names are ignored. This is used to avoid hints for parameters named *self* and
+*cls*, which are usually unnecessary.
 
 
 pitfalls
